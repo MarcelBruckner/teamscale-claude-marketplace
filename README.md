@@ -19,7 +19,7 @@ A marketplace for Claude Code plugins by the Teamscale team.
    To install a plugin, run:
 
    ```
-   /plugins install teamscale
+   /plugins install Teamscale
    ```
 
 3. Reload plugins to apply changes:
