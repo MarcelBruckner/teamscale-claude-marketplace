@@ -1,0 +1,18 @@
+{
+  "name": "Teamscale",
+  "version": "0.1.0",
+  "description": "A plugin that exposes a Teamscale MCP servers for your instances.",
+  "mcpServers": {
+    "teamscale": {
+      "command": "uv",
+      "args": ["run", "--directory", "${CLAUDE_PLUGIN_ROOT}/server", "python", "server.py"],
+      "env": {
+        "TEAMSCALE_URL": "${TEAMSCALE_URL}",
+        "TEAMSCALE_USER": "${TEAMSCALE_USER}",
+        "TEAMSCALE_ACCESS_KEY": "${TEAMSCALE_ACCESS_KEY}",
+        "ENABLE_TOOLS": "${ENABLE_TOOLS}"
+      }, 
+      "mcpConnectionTimeout": 60000
+    }
+  }
+}

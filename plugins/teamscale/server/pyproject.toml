@@ -1,0 +1,10 @@
+[project]
+name = "teamscale-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = ["fastmcp>=3.2.4"]
+
+[project.scripts]
+teamscale-mcp = "server:main"

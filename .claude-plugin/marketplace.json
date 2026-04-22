@@ -1,0 +1,14 @@
+{
+  "name": "teamscale-plugins",
+  "owner": {
+    "name": "Teamscale",
+    "email": "info@teamscale.com"
+  },
+  "plugins": [
+    {
+      "name": "Teamscale",
+      "source": "./plugins/teamscale",
+      "description": "MCP server that exposes the Teamscale REST API as resources and tools (auto-generated from OpenAPI)."
+    }
+  ]
+}
