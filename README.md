@@ -45,7 +45,7 @@ The plugins require environment variables to connect to your Teamscale instance.
 export TEAMSCALE_URL=https://myinstance.teamscale.io
 export TEAMSCALE_USER=your-username
 export TEAMSCALE_ACCESS_KEY=your-access-key
-# Optional: export ENABLE_TOOLS=1
+# Optional: export ENABLE_TOOLS=true
 ```
 
 Then start Claude Code normally:
