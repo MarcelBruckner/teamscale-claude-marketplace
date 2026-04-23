@@ -490,4 +490,42 @@ Consider adding the **OpenAPI plugin** alongside for exploratory/advanced use ca
 
 <!-- _class: lead -->
 
+# 🔮 Future Work
+
+---
+
+# 🔐 Safer Authentication
+
+| Method | ⚠️ Risk |
+|---|---|
+| **Env vars** | Credentials in shell history / profile |
+| **In-prompt** | **Credentials sent to the LLM** as tool parameters |
+
+In-prompt credentials become part of the conversation context sent to Anthropic's API.
+
+**Possible improvements:**
+- 🔑 **OAuth / SSO** — browser-based login, token stored locally, never sent to LLM
+- 🗝️ **System keychain** — read from OS keychain (macOS Keychain, etc.)
+- 📄 **Local config file** — `.teamscale.json` read server-side, not exposed as tool params
+
+---
+
+# 🏠 Hosting Options
+
+- 💻 **Local** (today) — MCP server runs on the developer's machine, connects to Teamscale via HTTP
+- 🖥️ **Standalone server** — MCP server deployed as a separate service, no local install needed
+- 🏗️ **Integrated in Teamscale** — Teamscale ships MCP natively as a built-in endpoint
+
+| | 💻 Local | 🖥️ Standalone | 🏗️ Integrated |
+|---|---|---|---|
+| Local install needed |  Yes |  No |  No |
+| Always up-to-date | User updates | OPS updates | With every Teamscale update |
+| Teamscale changes needed |  None | None (External tool) | Yes (Built-in) |
+
+⚠️ **Authentication is a problem in all three cases.**
+
+---
+
+<!-- _class: lead -->
+
 # 💬 Questions?
