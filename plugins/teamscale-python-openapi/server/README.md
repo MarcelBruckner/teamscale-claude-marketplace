@@ -19,7 +19,7 @@ claude mcp add teamscale-openapi \
   -e TEAMSCALE_URL=<teamscale-url> \
   -e TEAMSCALE_USER=<your-username> \
   -e TEAMSCALE_ACCESS_KEY=<your-access-key> \
-  -- uv run /path/to/teamscale-claude-marketplace/plugins/teamscale-fastmcp-openapi/server/server.py
+  -- uv run /path/to/teamscale-claude-marketplace/plugins/teamscale-python-openapi/server/server.py
 ```
 
 ## Verify Installation

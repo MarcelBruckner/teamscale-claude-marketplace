@@ -1,17 +1,17 @@
 {
-  "name": "teamscale-fastmcp-openapi",
+  "name": "teamscale-typescript-custom",
   "version": "0.1.0",
-  "description": "MCP server that exposes the Teamscale REST API as resources and tools (auto-generated from OpenAPI).",
+  "description": "Hand-crafted MCP tools for common Teamscale workflows (TypeScript implementation).",
   "mcpServers": {
     "teamscale": {
-      "command": "uv",
-      "args": ["run", "--directory", "${CLAUDE_PLUGIN_ROOT}/server", "python", "server.py"],
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/start-server.js"],
       "env": {
         "TEAMSCALE_URL": "${TEAMSCALE_URL}",
         "TEAMSCALE_USER": "${TEAMSCALE_USER}",
         "TEAMSCALE_ACCESS_KEY": "${TEAMSCALE_ACCESS_KEY}",
         "ENABLE_TOOLS": "${ENABLE_TOOLS}"
-      }, 
+      },
       "mcpConnectionTimeout": 60000
     }
   }

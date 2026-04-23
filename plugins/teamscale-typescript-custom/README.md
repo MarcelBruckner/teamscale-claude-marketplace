@@ -1,8 +1,10 @@
-# Teamscale Custom Plugin for Claude Code
+# Teamscale Custom Plugin for Claude Code (TypeScript)
 
-A [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code) that exposes hand-crafted MCP tools for common [Teamscale](https://teamscale.com) workflows. Uses a generated Python REST API client under the hood.
+A [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code) that exposes hand-crafted MCP tools for common [Teamscale](https://teamscale.com) workflows. Uses a generated REST API client under the hood for type-safe access to the Teamscale API.
 
-Unlike the [OpenAPI plugin](../teamscale-fastmcp-openapi/), which auto-generates endpoints from the OpenAPI spec, this plugin provides curated, higher-level tools with custom logic (e.g. findings aggregation, architecture verification, dashboard checks).
+This plugin provides curated, higher-level tools with custom logic (e.g. findings aggregation, architecture verification, dashboard checks), unlike the [OpenAPI plugin](../teamscale-python-openapi/) which auto-generates endpoints from the OpenAPI spec.
+
+A [Python implementation](../teamscale-python-custom/) with identical tools is also available. Choose whichever language fits your environment.
 
 ## Available Tools
 
@@ -24,8 +26,7 @@ Unlike the [OpenAPI plugin](../teamscale-fastmcp-openapi/), which auto-generates
 
 ## Prerequisites
 
-- Python 3.14+
-- [uv](https://docs.astral.sh/uv/) package manager
+- Node.js 18+
 - A Teamscale instance with API access
 - A Teamscale access key (generate one in your Teamscale user profile)
 
@@ -35,7 +36,9 @@ This plugin is distributed via the [teamscale-claude-marketplace](../../). See t
 
 ## Configuration
 
-The plugin requires the following environment variables:
+**All environment variables are optional.** If not set, Claude will ask for the connection details (server URL, user, access key) as tool parameters at runtime. This means you can install and use this plugin without any upfront configuration.
+
+To avoid being prompted every time, you can set the following environment variables before launching Claude Code:
 
 | Variable | Description |
 |---|---|
@@ -47,9 +50,11 @@ The plugin requires the following environment variables:
 
 ```
 .claude-plugin/plugin.json   Plugin manifest — declares the MCP servers
-start-server.py              Generates the REST API client and starts the server
+start-server.js              Generates the REST API client, compiles TypeScript, and starts the server
 server/
-  server.py                  MCP server (Python, FastMCP + generated client)
-  generate-client.sh         Generates the Python REST API client from the OpenAPI spec
-  teamscale-rest-api-client/ Generated Python client
+  server.ts                  MCP server (TypeScript, @modelcontextprotocol/sdk + generated client)
+  generate-client.sh         Generates the TypeScript REST API client from the OpenAPI spec
+  teamscale-openapi.json     Teamscale OpenAPI 3.0.1 specification
+  teamscale-rest-api-client/ Generated TypeScript client (gitignored)
+  dist/                      Compiled JavaScript output (gitignored)
 ```

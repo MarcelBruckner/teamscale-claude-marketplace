@@ -1,0 +1,23 @@
+{
+  "name": "teamscale-typescript-custom",
+  "version": "0.1.0",
+  "description": "Teamscale MCP based on TypeScript",
+  "license": "ISC",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "generate": "./generate-client.sh",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.96.1",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@hey-api/client-fetch": "^0.13.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.0"
+  }
+}

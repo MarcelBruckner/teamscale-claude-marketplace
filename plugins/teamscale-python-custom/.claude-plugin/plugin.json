@@ -1,7 +1,7 @@
 {
-  "name": "teamscale-fastmcp-custom",
+  "name": "teamscale-python-custom",
   "version": "0.1.0",
-  "description": "MCP server that exposes the Teamscale REST API as custom resources and tools.",
+  "description": "Hand-crafted MCP tools for common Teamscale workflows (Python implementation).",
   "mcpServers": {
     "teamscale": {
       "command": "python3",

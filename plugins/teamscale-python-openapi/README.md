@@ -4,7 +4,7 @@ A [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code) that expo
 
 GET endpoints are exposed as MCP resources (or resource templates when they contain path parameters). Non-GET endpoints (POST, PUT, DELETE, etc.) are excluded by default. Set the `ENABLE_TOOLS` environment variable to expose them as MCP tools.
 
-Unlike the [custom plugin](../teamscale-fastmcp-custom/), which provides hand-crafted higher-level tools, this plugin exposes the full Teamscale REST API surface automatically.
+Unlike the [custom plugin](../teamscale-python-custom/), which provides hand-crafted higher-level tools, this plugin exposes the full Teamscale REST API surface automatically.
 
 ## Prerequisites
 

@@ -6,14 +6,19 @@
   },
   "plugins": [
     {
-      "name": "teamscale-fastmcp-openapi",
-      "source": "./plugins/teamscale-fastmcp-openapi",
+      "name": "teamscale-python-openapi",
+      "source": "./plugins/teamscale-python-openapi",
       "description": "MCP server that exposes the Teamscale REST API as resources and tools (auto-generated from OpenAPI)."
     },
     {
-      "name": "teamscale-fastmcp-custom",
-      "source": "./plugins/teamscale-fastmcp-custom",
-      "description": "MCP server that exposes the Teamscale REST API as custom resources and tools."
+      "name": "teamscale-python-custom",
+      "source": "./plugins/teamscale-python-custom",
+      "description": "Hand-crafted MCP tools for common Teamscale workflows (Python implementation)."
+    },
+    {
+      "name": "teamscale-typescript-custom",
+      "source": "./plugins/teamscale-typescript-custom",
+      "description": "Hand-crafted MCP tools for common Teamscale workflows (TypeScript implementation)."
     }
   ]
 }

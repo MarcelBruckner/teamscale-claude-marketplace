@@ -1,6 +1,6 @@
-# Teamscale Custom MCP Server
+# Teamscale Custom MCP Server (Python)
 
-An MCP server that exposes hand-crafted [Teamscale](https://teamscale.com) tools for Claude Code. Uses a generated Python REST API client for type-safe access to the Teamscale API.
+An MCP server that exposes hand-crafted [Teamscale](https://teamscale.com) tools for Claude Code. Uses a generated Python REST API client for type-safe access to the Teamscale API. A [TypeScript implementation](../../teamscale-typescript-custom/server/) with identical tools is also available.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ claude mcp add teamscale-custom \
   -e TEAMSCALE_URL=<teamscale-url> \
   -e TEAMSCALE_USER=<your-username> \
   -e TEAMSCALE_ACCESS_KEY=<your-access-key> \
-  -- python3 /path/to/teamscale-claude-marketplace/plugins/teamscale-fastmcp-custom/start-server.py
+  -- python3 /path/to/teamscale-claude-marketplace/plugins/teamscale-python-custom/start-server.py
 ```
 
 ## Verify Installation
