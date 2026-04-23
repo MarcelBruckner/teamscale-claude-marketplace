@@ -6,9 +6,14 @@
   },
   "plugins": [
     {
-      "name": "Teamscale",
-      "source": "./plugins/teamscale",
+      "name": "teamscale-fastmcp-openapi",
+      "source": "./plugins/teamscale-fastmcp-openapi",
       "description": "MCP server that exposes the Teamscale REST API as resources and tools (auto-generated from OpenAPI)."
+    },
+    {
+      "name": "teamscale-fastmcp-custom",
+      "source": "./plugins/teamscale-fastmcp-custom",
+      "description": "MCP server that exposes the Teamscale REST API as custom resources and tools."
     }
   ]
 }

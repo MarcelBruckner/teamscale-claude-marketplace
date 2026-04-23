@@ -1,0 +1,14 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.27.0",
+    "teamscale-rest-api-client",
+]
+
+[tool.uv.sources]
+teamscale-rest-api-client = { path = "teamscale-rest-api-client" }

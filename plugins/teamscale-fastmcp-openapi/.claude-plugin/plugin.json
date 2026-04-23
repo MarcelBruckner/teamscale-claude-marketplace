@@ -1,7 +1,7 @@
 {
-  "name": "Teamscale",
+  "name": "teamscale-fastmcp-openapi",
   "version": "0.1.0",
-  "description": "A plugin that exposes a Teamscale MCP servers for your instances.",
+  "description": "MCP server that exposes the Teamscale REST API as resources and tools (auto-generated from OpenAPI).",
   "mcpServers": {
     "teamscale": {
       "command": "uv",
