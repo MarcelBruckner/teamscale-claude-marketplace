@@ -230,3 +230,11 @@ TEAMSCALE_URL=https://myinstance.teamscale.io TEAMSCALE_ACCESS_KEY=... TEAMSCALE
   npx @modelcontextprotocol/inspector -- \
   uv run plugins/teamscale-python-openapi/server/server.py
 ```
+
+## Presentation
+
+To generate a PDF of the plugin comparison presentation:
+
+```sh
+npx @marp-team/marp-cli presentation.md --html --pdf --output presentation.pdf
+```
