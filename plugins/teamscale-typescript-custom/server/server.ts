@@ -143,6 +143,13 @@ server.tool(
           return serverUrl.replace(/\/+$/, "") + "/" + repoPath;
         }
       }
+      if (t === "gitlab") {
+        const serverUrl = opts["GitLab Server URL"] ?? "";
+        const repoPath = opts["Repository Path"] ?? "";
+        if (serverUrl && repoPath) {
+          return serverUrl.replace(/\/+$/, "") + "/" + repoPath;
+        }
+      }
       if (t === "stash" || t === "bitbucket") {
         const serverUrl = opts["Stash Server URL"] ?? "";
         const repoPath = opts["Repository Path"] ?? "";

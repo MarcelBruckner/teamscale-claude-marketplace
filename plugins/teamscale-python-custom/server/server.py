@@ -128,6 +128,11 @@ async def get_project_id(
             repo_path = opts["Repository Path"] if "Repository Path" in opts else ""
             if server_url and repo_path:
                 return server_url.rstrip("/") + "/" + repo_path
+        if t == "gitlab":
+            server_url = opts["GitLab Server URL"] if "GitLab Server URL" in opts else ""
+            repo_path = opts["Repository Path"] if "Repository Path" in opts else ""
+            if server_url and repo_path:
+                return server_url.rstrip("/") + "/" + repo_path
         if t in ("stash", "bitbucket"):
             server_url = opts["Stash Server URL"] if "Stash Server URL" in opts else ""
             repo_path = opts["Repository Path"] if "Repository Path" in opts else ""
