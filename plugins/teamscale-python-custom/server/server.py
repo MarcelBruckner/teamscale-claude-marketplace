@@ -467,7 +467,10 @@ async def pre_commit_upload(
         ),
         expect_body=False,
     )
-    result = PreCommit3Result.from_dict(json.loads(response.content))
+    try:
+        result = PreCommit3Result.from_dict(json.loads(response.content))
+    except (json.JSONDecodeError, ValueError, KeyError) as e:
+        raise RuntimeError(f"Failed to parse pre-commit response: {e}") from e
     return result.to_dict()
 
 
