@@ -18,6 +18,12 @@ from teamscale_rest_api_client.api.architecture import get_all_architecture_asse
 from teamscale_rest_api_client.models.e_log_level import ELogLevel
 from teamscale_rest_api_client.types import UNSET
 
+import json
+
+from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
+from teamscale_rest_api_client.models.request_pre_commit_analysis_body import RequestPreCommitAnalysisBody
+from teamscale_rest_api_client.models.pre_commit_3_result import PreCommit3Result
+
 
 MCP = FastMCP("Teamscale MCP")
 
@@ -430,6 +436,39 @@ async def get_findings_list(
     ))
     return [f.to_dict() for f in response.parsed]
 
+
+
+@MCP.tool()
+@teamscale_tool
+async def pre_commit_upload(
+    project: str,
+    changes: str,
+    branch: str | None = None,
+    server: str | None = None,
+    user: str | None = None,
+    access_key: str | None = None,
+    fetch: Callable[[Awaitable], Awaitable] | None = None,
+) -> dict:
+    """Upload file changes for pre-commit analysis and return immediate results.
+
+    The changes parameter is a JSON string mapping file paths to their new content.
+    Use null values for deleted files. Example: {"src/foo.py": "print('hi')", "old.py": null}
+    Returns findings, an optional polling token, and any errors.
+    """
+    client = resolve_connection(server, user, access_key)
+    body = RequestPreCommitAnalysisBody()
+    body.additional_properties = json.loads(changes)
+    response = await fetch(
+        request_pre_commit_analysis.asyncio_detailed(
+            project=project,
+            client=client,
+            body=body,
+            branch=branch if branch is not None else UNSET,
+        ),
+        expect_body=False,
+    )
+    result = PreCommit3Result.from_dict(json.loads(response.content))
+    return result.to_dict()
 
 
 def main():
