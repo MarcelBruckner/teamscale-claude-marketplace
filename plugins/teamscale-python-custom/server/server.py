@@ -558,6 +558,7 @@ async def get_test_gap_percentage(
     project: str,
     end: str,
     baseline: str,
+    merge_request_identifier: str | None = None,
     all_partitions: bool = True,
     partitions: list[str] | None = None,
     server: str | None = None,
@@ -568,6 +569,7 @@ async def get_test_gap_percentage(
     """Get the test gap percentage for a merge request.
 
     end and baseline are commit descriptors, e.g. "feature-branch:HEAD" and "main:HEAD".
+    merge_request_identifier is optional, format "connectorId/mrNumber" (from mergeRequest.identifier.idWithRepository).
     Returns the TGA percentage (0.0 to 1.0) representing the ratio of tested changes.
     """
     client = resolve_connection(server, user, access_key)
@@ -577,6 +579,7 @@ async def get_test_gap_percentage(
         end=end,
         baseline=baseline,
         merge_request_mode=True,
+        merge_request_identifier=merge_request_identifier if merge_request_identifier is not None else UNSET,
         all_partitions=all_partitions,
         partitions=partitions if partitions is not None else UNSET,
     ))
@@ -589,6 +592,7 @@ async def get_test_gap_treemap(
     project: str,
     end: str,
     baseline: str,
+    merge_request_identifier: str | None = None,
     all_partitions: bool = True,
     partitions: list[str] | None = None,
     server: str | None = None,
@@ -599,6 +603,7 @@ async def get_test_gap_treemap(
     """Get the test gap treemap for a merge request.
 
     end and baseline are commit descriptors, e.g. "feature-branch:HEAD" and "main:HEAD".
+    merge_request_identifier is optional, format "connectorId/mrNumber" (from mergeRequest.identifier.idWithRepository).
     Returns per-method test gap data including state (TESTED_CHURN, UNTESTED_CHANGE,
     UNTESTED_ADDITION, UNCHANGED, etc.), method names, and file paths.
     """
@@ -609,6 +614,7 @@ async def get_test_gap_treemap(
         end=end,
         baseline=baseline,
         merge_request_mode=True,
+        merge_request_identifier=merge_request_identifier if merge_request_identifier is not None else UNSET,
         all_partitions=all_partitions,
         partitions=partitions if partitions is not None else UNSET,
     ))

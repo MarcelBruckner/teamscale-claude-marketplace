@@ -58,9 +58,11 @@ Using the selected merge request's `mergeRequest.sourceBranch` and `mergeRequest
 - `end`: `"{sourceBranch}:HEAD"`
 - `baseline`: `"{targetBranch}:HEAD"`
 
-Call both MCP tools with the project, end, baseline, and partition config:
-- `get_test_gap_percentage`
-- `get_test_gap_treemap`
+Also extract the merge request identifier from `mergeRequest.identifier.idWithRepository` (format: `"connectorId/mrNumber"`).
+
+Call both MCP tools with the project, end, baseline, merge_request_identifier, and partition config:
+- `get_test_gap_percentage` with `merge_request_identifier` set to the identifier string
+- `get_test_gap_treemap` with `merge_request_identifier` set to the identifier string
 
 ### 6. Present results
 
