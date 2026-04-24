@@ -2,6 +2,7 @@ import base64
 import functools
 import inspect
 import asyncio
+import json
 import os
 import httpx
 
@@ -15,14 +16,11 @@ from teamscale_rest_api_client.api.logging import get_project_worker_logs
 from teamscale_rest_api_client.api.findings import get_findings
 from teamscale_rest_api_client.api.dashboards import get_all_dashboards
 from teamscale_rest_api_client.api.architecture import get_all_architecture_assessments, get_architecture_assessment
-from teamscale_rest_api_client.models.e_log_level import ELogLevel
-from teamscale_rest_api_client.types import UNSET
-
-import json
-
 from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
+from teamscale_rest_api_client.models.e_log_level import ELogLevel
 from teamscale_rest_api_client.models.request_pre_commit_analysis_body import RequestPreCommitAnalysisBody
 from teamscale_rest_api_client.models.pre_commit_3_result import PreCommit3Result
+from teamscale_rest_api_client.types import UNSET
 
 
 MCP = FastMCP("Teamscale MCP")
