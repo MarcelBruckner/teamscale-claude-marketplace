@@ -24,17 +24,6 @@ style: |
   }
   .pro { color: #2e7d32; }
   .con { color: #c62828; }
-  .badge {
-    display: inline-block;
-    padding: 0.15em 0.5em;
-    border-radius: 4px;
-    font-size: 0.8em;
-    font-weight: 600;
-    color: #fff;
-  }
-  .badge-auto { background: #1565c0; }
-  .badge-custom { background: #6a1b9a; }
-  .badge-ts { background: #f57f17; color: #000; }
   strong { color: #1a1a1a; }
   h1 { color: #1a1a1a; }
   h2 { color: #333; }
@@ -47,84 +36,56 @@ style: |
 
 <!-- _class: lead -->
 
-# Making the Teamscale API Available in Claude Code
+# Teamscale + Claude Code
 
-## Three MCP Server Implementations Compared
+## From API Tools to Developer Workflows
 
 Marcel Bruckner
 
 ---
 
-# 🔌 Why MCP?
+# What We Built
+
+We connected Teamscale to Claude Code so developers can run findings analysis, fix code quality issues, and close test gaps — all from the command line.
+
+The stack has two layers:
+
+1. **MCP Server** — exposes Teamscale REST API endpoints as tools Claude can call
+2. **Skills** — multi-step workflows that orchestrate those tools into things developers actually want to do
+
+We built three MCP server implementations to compare approaches, and five skills that demonstrate the real value.
+
+---
+
+# 🔌 MCP in 30 Seconds
 
 The **Model Context Protocol** connects AI assistants to external tools and data.
 
 An MCP server exposes:
 - **Tools** — actions Claude can invoke (e.g. "list projects", "get findings")
-- **Resources** — data Claude can read (read-only GET endpoints)
-- **Resource Templates** — parameterized resources (e.g. `/projects/{project}/findings`)
+- **Resources** — data Claude can read (read-only endpoints)
 
 Claude Code has native MCP support via its **plugin system**.
 
-I built three plugins that bridge Claude Code to the Teamscale REST API.
+We built three plugins that bridge Claude Code to the Teamscale REST API — each with a different approach.
 
 ---
 
-# 🗺️ The Three Approaches
+# 🗺️ Three MCP Server Approaches
 
 | | Python OpenAPI | Python Custom | TypeScript Custom |
 |---|---|---|---|
-| **Strategy** | Auto-generate from OpenAPI spec | Hand-craft curated tools | Hand-craft curated tools |
-| **API coverage** | Full (121 endpoints) | 13 selected tools | 13 selected tools |
-| **Server code** | 65 lines | 439 lines | 535 lines |
+| **Strategy** | Auto-generate from spec | Hand-craft curated tools | Hand-craft curated tools |
+| **API coverage** | Full (121 endpoints) | ~20 selected tools | 13 selected tools |
+| **Server code** | 65 lines | ~700 lines | 535 lines |
 | **Runtime** | Python + uv | Python + uv | Node.js 18+ |
-| **MCP SDK** | FastMCP 3.x | mcp\[cli\] (official) | @modelcontextprotocol/sdk |
+| **Zero-config** | ❌ Env vars required | ✅ | ✅ |
 
 ---
 
-<!-- _class: lead -->
+# Python OpenAPI — Full Auto
 
-# <span class="badge badge-auto">1</span> 🐍 Python OpenAPI
-### Auto-generated from the Teamscale OpenAPI spec
-
----
-
-# Python OpenAPI — How It Works
-
-```
-Teamscale Instance                    FastMCP OpenAPIProvider
-       |                                      |
-       |  GET /openapi.json                   |
-       |------------------------------------->|
-       |                                      |
-       |  JSON spec (all endpoints)           |
-       |<-------------------------------------|
-       |                                      |
-       |     Automatically registers:         |
-       |     - GET -> Resources               |
-       |     - GET {param} -> Templates       |
-       |     - POST/PUT/DELETE -> Tools       |
-       |       (if ENABLE_TOOLS is set)       |
-```
-
-**65 lines of code.** No hand-written tool definitions at all.
-
----
-
-# Python OpenAPI — What Gets Exposed
-
-| Type | Count | Examples |
-|---|---|---|
-| **Resources** | 11 | `getAllProjects`, `getHealthStatus`, `getAllUsers` |
-| **Resource Templates** | 46 | `getFindings`, `getBranches`, `getCode` |
-| **Tools** (opt-in) | 64 | `createProject`, `flagFindings`, `uploadReport` |
-| **Total** | **121** | |
-
-All Teamscale REST endpoints, mapped automatically.
-
----
-
-# Python OpenAPI — Trade-offs
+Fetches the OpenAPI spec from a running Teamscale instance, auto-registers all 121 endpoints.
 
 <div class="columns">
 <div>
@@ -132,152 +93,37 @@ All Teamscale REST endpoints, mapped automatically.
 ### ✅ Advantages
 
 - Near-zero maintenance
-- New Teamscale endpoints appear automatically
-- Full API surface available
+- New endpoints appear automatically
 - Only 65 lines of code
 
 </div>
 <div>
 
-### ⚠️ Disadvantages
+### ⚠️ Problems
 
-- 121 endpoints flood Claude's tool list
+- 121 tools flood Claude's context
+- Claude often picks wrong endpoint
 - No higher-level business logic
-- Claude often picks wrong endpoint or passes wrong parameters
-- Env vars **required** at startup
-- Slower startup (HTTP fetch of spec)
+- Env vars required at startup
 
 </div>
 </div>
 
 ---
 
-<!-- _class: lead -->
+# Custom Plugins — Curated Tools
 
-# <span class="badge badge-custom">2</span> 🐍 Python Custom
-### Hand-crafted tools for Teamscale workflows
-
----
-
-# Python Custom — How It Works
-
-```
-teamscale-openapi.json
-        |  openapi-python-client (code generation)
-        v
-teamscale-rest-api-client/       Generated, type-safe Python client
-        |  imported by
-        v
-server.py                        13 hand-written tools with business logic
-        |  registered on
-        v
-FastMCP Server (stdio)
-```
-
-Each tool accepts optional `server`, `user`, `access_key` params with env-var fallback.
-**Key UX advantage:** no setup wizard needed — Claude asks for credentials when needed.
-
----
-
-# 🔑 Zero-Config Connection Model
-
-```
-   list_projects(server=?, user=?, access_key=?)
-                       |
-            +----------+----------+
-            |                     |
-    Param provided?        Env var set?
-      server="..."      TEAMSCALE_URL="..."
-            |                     |
-            v                     v
-       Use param             Use env var
-            |                     |
-            +------> Client <-----+
-```
-
-- 👋 **First time users:** just install the plugin, Claude asks for details
-- ⚡ **Power users:** set env vars once, never prompted again
-- 🔀 **Multi-instance:** pass different servers per tool call, even in one session
-
----
-
-# Python Custom — The 13 Tools
-
-<div class="columns">
-<div>
-
-**Project & Config**
-| Tool | Description |
-|---|---|
-| `list_projects` | List all projects |
-| `get_project_id` | Find project by repo URL |
-| `get_project_connectors` | Debug connectors |
-| `get_project_branches` | List live branches |
-| `delete_teamscale_project` | Delete project |
-
-**Worker Logs**
-| Tool | Description |
-|---|---|
-| `get_worker_logs` | All log entries |
-| `get_worker_log_warnings` | Warnings only |
-| `get_worker_log_fatals` | Fatals only |
-
-</div>
-<div>
-
-**Findings**
-| Tool | Description |
-|---|---|
-| `get_findings_list` | Fetch all findings |
-| `get_findings_count_per_file` | Spot outlier files |
-| `get_findings_count_per_check` | Spot noisy checks |
-
-**Verification**
-| Tool | Description |
-|---|---|
-| `verify_project_dashboards` | Check dashboards |
-| `verify_architecture` | Detect violations |
-
-</div>
-</div>
-
----
-
-# Python Custom — Key Pattern: `@teamscale_tool`
-
-```python
-@MCP.tool()
-@teamscale_tool
-async def list_projects(
-    server: str | None = None,
-    user: str | None = None,
-    access_key: str | None = None,
-    fetch = None,  # injected by decorator
-) -> list[dict]:
-    """List all projects on a Teamscale instance."""
-    client = resolve_connection(server, user, access_key)
-    response = await fetch(
-        get_all_projects.asyncio_detailed(client=client)
-    )
-    return [p.to_dict() for p in response.parsed]
-```
-
-The decorator injects a `fetch` helper that handles HTTP errors uniformly, then **hides itself** from the tool's public signature.
-
----
-
-# Python Custom — Trade-offs
+Both use a generated REST client from the bundled `teamscale-openapi.json`. Hand-written tools with business logic, uniform error handling, and optional connection params.
 
 <div class="columns">
 <div>
 
 ### ✅ Advantages
 
-- Curated tools with clear intent
+- Claude picks the right tool reliably
 - Higher-level logic (aggregation, verification)
-- Uniform error handling via decorator
-- **Zero-config install** — env vars optional
-- Claude picks the right tool more reliably
+- Zero-config install
+- Uniform error handling
 
 </div>
 <div>
@@ -285,180 +131,162 @@ The decorator injects a `fetch` helper that handles HTTP errors uniformly, then 
 ### ⚠️ Limitations
 
 - Each new endpoint requires manual work
-- Only 13 of 121 endpoints covered
-
-> 💡 Python 3.14 is what the prototype uses — minimum version can be lowered.
+- Python version uses Python 3.14+
 
 </div>
 </div>
 
----
-
-<!-- _class: lead -->
-
-# <span class="badge badge-ts">3</span> 🟨 TypeScript Custom
-### Same curated tools, different runtime
+The Python and TypeScript versions expose identical tools — choose based on your runtime.
 
 ---
 
-# TypeScript Custom — How It Works
-
-```
-teamscale-openapi.json
-        |  @hey-api/openapi-ts (code generation)
-        v
-teamscale-rest-api-client/       Generated TypeScript client
-        |  imported by
-        v
-server.ts                        13 hand-written tools (same as Python)
-        |  tsc compile
-        v
-dist/server.js  -->  McpServer (stdio)
-```
-
-`start-server.js` bootstraps everything: npm install, client generation, tsc, then runs the server.
-
-Client can be **pre-generated and committed** instead — see upcoming slides.
-
----
-
-# TypeScript Custom — Same Tools, Different SDK
-
-```typescript
-server.tool(
-  "list_projects",
-  "List all projects on a Teamscale instance.",
-  { ...connectionParams },
-  async ({ server: srv, user, access_key }) => {
-    const client = resolveConnection(srv, user, access_key);
-    const projects = await teamscaleFetch(
-      await getAllProjects({ client })
-    );
-    return textResult(projects);
-  }
-);
-```
-
-Uses Zod schemas for parameter validation. `teamscaleFetch` provides the same error handling as Python's `@teamscale_tool`.
-
----
-
-# TypeScript Custom — Trade-offs
-
-<div class="columns">
-<div>
-
-### ✅ Advantages
-
-- **Node.js 18+** widely available
-- Official MCP TypeScript SDK (Tier 1, most mature)
-- Identical tool set to Python custom
-- Zod validation on all parameters
-- **Zero-config install** — env vars optional
-
-</div>
-<div>
-
-### ⚠️ Limitations
-
-- More verbose (535 vs 439 lines)
-- Each new endpoint requires manual work
-
-</div>
-</div>
-
----
-
-# 📊 Side-by-Side Comparison
+# Quick Comparison
 
 | Dimension | Python OpenAPI | Python Custom | TS Custom |
 |---|---|---|---|
-| **Endpoints** | 121 | 13 | 13 |
-| **Code** | 65 lines | 439 lines | 535 lines |
-| **Runtime** | Python + uv | Python + uv | Node.js 18+ |
-| **Zero-config install** | ❌ Env vars required | ✅ | ✅ |
-| **Auto new endpoints** | ✅ | ❌ Manual | ❌ Manual |
+| **Endpoints** | 121 | ~20 | 13 |
+| **Zero-config install** | ❌ | ✅ | ✅ |
+| **Auto new endpoints** | ✅ | ❌ | ❌ |
 | **Business logic** | ❌ | ✅ | ✅ |
-| **Error handling** | Generic HTTP | 🛡️ Decorator | 🛡️ Helper fn |
-| **SDK maturity** | Tier 1 | Tier 1 | Tier 1 |
+| **Claude picks correctly** | Unreliable | Reliable | Reliable |
 
----
-
-# 🚀 Installation — Three Steps
-
-**1. Register the marketplace:**
-```
-/plugins marketplace add https://github.com/MarcelBruckner/teamscale-claude-marketplace.git
-```
-
-**2. Install the plugin you want:**
-```
-/plugins install teamscale-typescript-custom
-```
-
-**3. Reload:**
-```
-/reload-plugins
-```
-
-That's it. No env vars needed — Claude asks for credentials on first use.
-
----
-
-# 🧭 Which Approach Fits?
-
-**"We want full coverage with minimal effort"**
-&rarr; Python OpenAPI — but Claude struggles with 121 undifferentiated tools
-
-**"We want Claude to be effective at specific workflows"**
-&rarr; Either Custom plugin — 13 curated tools with clear intent
-
-**"We want the best of both worlds"**
-&rarr; **Hybrid**: OpenAPI for broad read-only access + Custom for curated workflows. They can coexist as separate plugins.
+**Verdict:** The auto-generated approach sounds appealing but fails in practice. Claude works much better with a small, curated tool set.
 
 ---
 
 <!-- _class: lead -->
 
-# 🔮 Future Work
+# 🛠️ What You Can Do With This
+
+## Skills Turn Tools Into Workflows
 
 ---
 
-# 🔐 Safer Authentication
+# Skills Are the Point
 
-| Method | ⚠️ Risk |
-|---|---|
-| **Env vars** | Credentials in shell history / profile |
-| **In-prompt** | **Credentials sent to the LLM** as tool parameters |
+MCP tools alone are building blocks. The real value comes from **skills** — multi-step workflows that orchestrate tools, read code, edit files, and guide the user.
 
-In-prompt credentials become part of the conversation context sent to Anthropic's API.
+Without skills, the user must know which tools exist, in what order to call them, and how to interpret raw API results.
 
-**Possible improvements:**
-- 🔑 **OAuth / SSO** — browser-based login, token stored locally, never sent to LLM
-- 🗝️ **System keychain** — read from OS keychain (macOS Keychain, etc.)
-- 📄 **Local config file** — `.teamscale.json` read server-side, not exposed as tool params
+With skills, the user just says what they want to accomplish.
 
----
-
-# 🏠 Hosting Options
-
-- 💻 **Local** (today) — MCP server runs on the developer's machine, connects to Teamscale via HTTP
-- 🖥️ **Standalone server** — MCP server deployed as a separate service, no local install needed
-- 🏗️ **Integrated in Teamscale** — Teamscale ships MCP natively as a built-in endpoint
-
-| | 💻 Local | 🖥️ Standalone | 🏗️ Integrated |
-|---|---|---|---|
-| Local install needed |  Yes |  No |  No |
-| Always up-to-date | User updates | OPS updates | With every Teamscale update |
-| Teamscale changes needed |  None | None (External tool) | Yes (Built-in) |
-
-⚠️ **Authentication is a problem in all three cases.**
+```
+/teamscale-skills:pre-commit               # "check my changes"
+/teamscale-skills:merge-request-findings    # "what did my MR break?"
+/teamscale-skills:fix-findings              # "fix them"
+```
 
 ---
 
-# 🧠 From Tools to Workflows
+# The Five Skills
 
-MCP gives Claude the **ability** to talk to Teamscale — but not the **initiative**.
+| Skill | What It Does |
+|-------|-------------|
+| **pre-commit** | Run Teamscale pre-commit analysis on uncommitted changes. Shows findings by file. |
+| **merge-request-findings** | Auto-detect the MR for the current branch, fetch finding churn (added + in changed code). |
+| **fix-findings** | Walk through findings one by one, propose code fixes, apply with confirmation. |
+| **merge-request-test-gaps** | Show which changed methods in your MR lack test coverage. |
+| **close-test-gaps** | For new methods: propose and write tests. For modified methods: suggest which tests to re-run. |
+
+---
+
+# A Typical Developer Workflow
+
+```
+# 1. See what findings your MR introduced
+/teamscale-skills:merge-request-findings
+
+# 2. Fix them interactively
+/teamscale-skills:fix-findings
+
+# 3. Check test coverage gaps
+/teamscale-skills:merge-request-test-gaps
+
+# 4. Write missing tests / re-run impacted tests
+/teamscale-skills:close-test-gaps
+
+# 5. Verify everything before pushing
+/teamscale-skills:pre-commit
+```
+
+Each skill auto-detects the project and MR from the git repo. Later skills pick up context from earlier ones.
+
+---
+
+# How Skills Work
+
+A skill is a Markdown file with YAML frontmatter. No code — just instructions for Claude:
+
+```markdown
+---
+name: merge-request-findings
+description: Fetch Teamscale findings for the MR on the current branch
+---
+
+## Steps
+
+### 1. Verify git repository
+Run `git rev-parse --is-inside-work-tree` via Bash. ...
+
+### 2. Detect Teamscale project
+Run `git remote get-url origin`. Call `get_project_id` MCP tool. ...
+
+### 3. Detect merge request
+Call `list_merge_requests` with status OPEN. Match by branch. ...
+```
+
+Skills orchestrate MCP tools, Bash commands, and file operations into a coherent workflow.
+
+---
+
+# Skill-Driven Development
+
+The skills dictate which MCP tools to build — not the other way around.
+
+```
+User use case  →  Design skill  →  Implement MCP tools skill needs
+```
+
+We started from developer workflows:
+- "Check my changes before pushing" → pre-commit skill → `pre_commit_analyze` tool
+- "What findings does my MR have?" → merge-request-findings skill → `list_merge_requests` + `get_merge_request_finding_churn` tools
+- "Close my test gaps" → close-test-gaps skill → `get_test_gap_treemap` + `get_merge_request_test_suggestions` tools
+
+The MCP tools exist to serve the skills.
+
+---
+
+<!-- _class: lead -->
+
+# 🔍 Observations
+
+---
+
+# LLM-Driven Pre-Commit Has Limits
+
+The pre-commit skill sends file contents through the LLM as MCP tool parameters. This hits payload size limits — Claude silently strips comments/constants to fit, producing **false findings**.
+
+A server-side approach (like `teamscale-dev`) reads files directly from disk with no size limits or content mangling. The LLM makes one tool call and gets clean results.
+
+**Takeaway:** MCP tools that do heavy lifting in the server process are more reliable than exposing low-level building blocks for the LLM to orchestrate.
+
+---
+
+# Generated REST Clients Break on Version Mismatches
+
+The generated typed clients (from `openapi-python-client` / `@hey-api/openapi-ts`) are strict — when Teamscale's API changes a field name or type, the client throws validation errors.
+
+This makes the plugin fragile. Any Teamscale update that changes response shapes breaks tools even if the endpoint still works fine.
+
+**Alternatives:**
+- Ship the MCP server with `teamscale-dev` (stays in sync automatically)
+- Skip the generated client, use plain HTTP calls with the OpenAPI spec as reference
+
+---
+
+# Skills Are What Make MCP Servers Useful
+
+MCP tools alone are building blocks — they expose capabilities but don't encode **when** or **how** to use them.
 
 Today: the user must know what to ask for.
 
@@ -470,38 +298,92 @@ User: "Check if there are architecture violations in project X"
 User: "..." (silence — Claude won't proactively do anything)
 ```
 
-The MCP server is the **foundation**, not the solution. To make Claude genuinely useful with Teamscale, we need layers on top that tell it **when** and **how** to act.
+Skills turn this into:
+
+```
+User: /teamscale-skills:pre-commit
+       → Skill detects project, reads changes, runs analysis,
+         formats results, suggests fixes
+```
 
 ---
 
-# 🧩 The Missing Plugin Layers
+<!-- _class: lead -->
 
-A Claude Code plugin can ship **all of these** — we only built the first one:
+# 🔮 Future Work
+
+---
+
+# Safer Authentication
+
+| Method | ⚠️ Risk |
+|---|---|
+| **Env vars** | Credentials in shell history / profile |
+| **In-prompt** | **Credentials sent to the LLM** as tool parameters |
+
+**Possible improvements:**
+- 🔑 **OAuth / SSO** — browser-based login, token stored locally, never sent to LLM
+- 🗝️ **System keychain** — read from OS keychain
+- 📄 **Local config file** — `.teamscale.json` read server-side, not exposed as params
+
+---
+
+# More Plugin Layers
+
+We built MCP tools and skills. A Claude Code plugin can ship more:
 
 | Component | What It Does | Teamscale Example |
 |---|---|---|
 | ✅ **MCP Server** | API tools Claude can call | `get_findings_list`, `verify_architecture` |
-| **Skills** | Multi-step workflows invoked via `/slash` commands | `/teamscale:review` — findings for changed files |
-| **Agents** | Custom personas with own system prompt & tool set | A "Teamscale QA" agent focused on code quality |
-| **Hooks** | Auto-run on Claude Code events (file edit, commit, …) | Check architecture compliance on every commit |
-| **Monitors** | Background watchers that stream events to Claude | Watch Teamscale worker logs for fatals in real-time |
+| ✅ **Skills** | Multi-step workflows via `/slash` commands | `/pre-commit`, `/fix-findings` |
+| **Agents** | Custom personas with own system prompt | A "Teamscale QA" agent |
+| **Hooks** | Auto-run on Claude Code events | Architecture check on every commit |
+| **Monitors** | Background watchers | Watch worker logs for fatals |
 
-MCP alone = a phone line. The other layers = someone who knows when to call and what to say.
+**Next:** Collect user use cases → design skills → implement tools those skills need.
 
 ---
 
-# 🛠️ What This Could Look Like
+# Hosting Options
 
-**Rule** (in CLAUDE.md):
-> "After completing a feature, run `verify_architecture` for the current project."
+| | Standalone Plugin | teamscale-dev | Standalone Server | Integrated in Teamscale |
+|---|---|---|---|---|
+| **Local install** | Yes | Already installed | No | No |
+| **Up-to-date** | User updates | With teamscale-dev | OPS updates | With Teamscale updates |
+| **API version sync** | Manual | Automatic | Manual | Automatic |
+| **Auth solved** | ❌ | ✅ | ❌ | ✅ |
 
-**Skill** (`/teamscale-review`):
-> Detect project from repo URL, fetch findings for changed files, suggest fixes
+---
 
-**Hook** (on pre-commit):
-> Automatically check architecture compliance before every commit
+<!-- _class: lead -->
 
-These layers turn a passive tool into an **active assistant**.
+# Why teamscale-dev Is the Right Choice
+
+---
+
+# teamscale-dev Solves the Hard Problems
+
+The standalone plugins we built demonstrate the value, but they have structural issues that `teamscale-dev` solves by design:
+
+| Problem | Standalone Plugin | teamscale-dev |
+|---|---|---|
+| **API version drift** | Bundled spec goes stale | Stays in sync automatically |
+| **Pre-commit payload limits** | LLM mangling, false findings | Server-side file reading, no limits |
+| **Authentication** | Env vars or in-prompt (insecure) | Already manages credentials |
+| **Installation** | Separate plugin install | Already on the developer's machine |
+| **Maintenance** | Separate repo, manual updates | Ships with Teamscale |
+
+---
+
+# What teamscale-dev Should Ship
+
+The MCP server in `teamscale-dev` should include:
+
+1. **The curated MCP tools** we proved out in the custom plugins — not auto-generated, not exhaustive, just the tools that skills need
+2. **The skills** as a bundled plugin — these are the user-facing value and work independently of the MCP server implementation
+3. **Server-side heavy lifting** — pre-commit analysis, file reading, polling should happen in the MCP server process, not through LLM tool-call chains
+
+The standalone plugins in this marketplace are the **prototype**. `teamscale-dev` is the **production home**.
 
 ---
 
