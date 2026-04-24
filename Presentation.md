@@ -250,6 +250,21 @@ User: /teamscale-skills:pre-commit
 
 ---
 
+# The Plugin Is Live
+
+The marketplace ships multiple MCP server plugins — the user picks the one that fits:
+
+```
+/plugins marketplace add https://github.com/MarcelBruckner/teamscale-claude-marketplace.git
+/plugins install teamscale-dev            # or teamscale-python-custom, etc.
+/plugins install teamscale-skills
+/reload-plugins
+```
+
+The skills work with any of the MCP servers. Swap the backend without changing workflows.
+
+---
+
 <!-- _class: lead -->
 
 # 🔍 Observations
@@ -272,6 +287,7 @@ The typed clients (from `openapi-python-client` / `@hey-api/openapi-ts`) break w
 
 **Alternatives:**
 - Build MCP tools into `teamscale-dev` (stays in sync automatically)
+- Host an `/mcp` endpoint in Teamscale itself (server and API always in sync)
 - Skip the generated client, use plain HTTP calls
 
 ---
@@ -329,62 +345,80 @@ We built MCP tools and skills. A Claude Code plugin can ship more:
 
 ---
 
-# Hosting Options
-
-| | Standalone Plugin | teamscale-dev | Standalone Server | Integrated in Teamscale |
-|---|---|---|---|---|
-| **Local install** | Separate plugin | Already on the machine | No | No |
-| **Up-to-date** | User updates | With teamscale-dev | OPS updates | With Teamscale updates |
-| **API version sync** | Manual (spec bundled) | Automatic | Manual | Automatic |
-| **Auth solved** | ❌ | ✅ | ❌ | ✅ |
-
----
-
 <!-- _class: lead -->
 
-# Why teamscale-dev Is the Right Choice
+# 🏗️ Architecture
+
+## Where Should the Tools Live?
 
 ---
 
-# teamscale-dev Solves the Hard Problems
+# Hosting Options
 
-| Problem | Standalone Plugin | teamscale-dev |
-|---|---|---|
-| **API version drift** | Bundled spec goes stale | Handles different Teamscale versions and APIs |
-| **Pre-commit payload** | LLM mangling, false findings | Reads files from disk, no limits |
-| **Authentication** | Env vars or in-prompt (insecure) | Already manages credentials |
-| **Installation** | Separate plugin install | Already on the machine |
-| **Maintenance** | Separate repo, manual updates | Built by the Teamscale developers |
+| | Standalone Plugin | teamscale-dev | Teamscale /mcp |
+|---|---|---|---|
+| **Local install** | Separate plugin | Already on the machine | Thin local MCP only |
+| **Up-to-date** | User updates | With teamscale-dev | With Teamscale updates |
+| **API version sync** | Manual (spec bundled) | Automatic | Automatic |
+| **Auth solved** | ❌ | ✅ | ✅ |
+
+The standalone plugin is what we prototyped. Two better options emerged.
 
 ---
 
-# How to Split the Work
+# Option A: teamscale-dev as MCP Server
+
+Everything runs locally. `teamscale-dev` already manages credentials, handles API versioning, and reads files from disk.
 
 | | Plugin | teamscale-dev |
 |---|---|---|
 | **Skills** | ✅ Slash commands | |
 | **MCP tools** | | ✅ All tools live here |
 | **Authentication** | | ✅ Credentials stay local |
-| **Install** | Installs/references teamscale-dev | |
+| **Local operations** | | ✅ Reads files, diffs, etc. |
 
-The plugin ships **skills only** and points to `teamscale-dev` as the MCP server (installing it if needed). User use cases drive new skills, and the skills dictate which MCP tools `teamscale-dev` needs to expose.
+The plugin ships **skills only** and points to `teamscale-dev` as the MCP server.
+
+**Strength:** Single binary, works offline, no server changes needed.
 
 ---
 
-# teamscale-dev Plugin Is Live
+# Option B: Teamscale /mcp + Local MCP
 
-The `teamscale-dev` MCP server plugin is already available in this marketplace:
+Split the work between a **remote MCP** hosted by Teamscale and a **local MCP** for filesystem operations.
 
-```
-/plugins marketplace add https://github.com/MarcelBruckner/teamscale-claude-marketplace.git
-/plugins install teamscale-dev
-/plugins install teamscale-skills
-/reload-plugins
-```
+| Responsibility | Teamscale /mcp | Local MCP |
+|---|---|---|
+| **Findings, metrics, test gaps** | ✅ | |
+| **Merge requests** | ✅ | |
+| **Authentication** | ✅ | |
+| **Git diff / change list** | | ✅ |
+| **Pre-commit upload** | | ✅ |
 
-No Python, no Node.js, no generated clients — just `teamscale-dev` on your PATH.
+---
 
-Skills orchestrate its tools. Authentication and API versioning are handled by the CLI.
+# Option B: Why Split?
+
+The remote MCP serves **all Teamscale data** — findings, test gaps, merge requests, dashboards. Auth is server-side, API versioning is automatic, and every Teamscale update ships new tools immediately.
+
+The local MCP handles **everything that needs the filesystem** — constructing diffs, reading file contents, building change lists for pre-commit.
+
+**Strength:** Thin local footprint, zero API drift, tools available to any MCP client (not just Claude Code).
+
+---
+
+# Comparing the Two
+
+| Dimension | teamscale-dev | Teamscale /mcp + Local MCP |
+|---|---|---|
+| **Local install** | Single binary | Thin local MCP |
+| **API drift** | teamscale-dev handles it | Server handles it |
+| **Auth** | CLI credentials | Server-side sessions |
+| **Server changes** | None | New /mcp endpoint |
+| **New tools ship with** | teamscale-dev release | Teamscale release |
+| **Works beyond Claude Code** | No (CLI-specific) | Yes (any MCP client) |
+
+Both need a **skills plugin** to turn tools into developer workflows.
 
 ---
 
