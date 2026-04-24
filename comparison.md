@@ -164,7 +164,7 @@ The Python and TypeScript versions expose identical tools — choose based on yo
 
 # Skills Are the Point
 
-MCP tools alone are building blocks. The real value comes from **skills** — multi-step workflows that orchestrate tools, read code, edit files, and guide the user.
+MCP tools alone are building blocks. The real value comes from **skills** — slash commands that orchestrate tools, read code, edit files, and guide the user through multi-step workflows.
 
 Without skills, the user must know which tools exist, in what order to call them, and how to interpret raw API results.
 
