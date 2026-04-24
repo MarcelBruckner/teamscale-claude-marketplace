@@ -529,7 +529,10 @@ async def pre_commit_analyze(
         ),
         expect_body=False,
     )
-    result = PreCommit3Result.from_dict(json.loads(response.content))
+    try:
+        result = PreCommit3Result.from_dict(json.loads(response.content))
+    except (json.JSONDecodeError, ValueError, KeyError) as e:
+        raise RuntimeError(f"Failed to parse pre-commit response: {e}") from e
 
     while result.token is not UNSET and result.token:
         await asyncio.sleep(2)
