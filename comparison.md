@@ -253,7 +253,7 @@ We started from developer workflows:
 
 The pre-commit skill sends file contents through the LLM as MCP tool parameters. This hits payload size limits — Claude silently strips comments/constants to fit, producing **false findings**.
 
-`teamscale-dev` (Teamscale's CLI tool, usable as an MCP server) handles this natively — it reads files directly from disk with no size limits or content mangling. The LLM makes one tool call and gets clean results.
+`teamscale-dev` handles this natively — it reads files directly from disk with no size limits or content mangling. The LLM makes one tool call and gets clean results.
 
 **Takeaway:** MCP tools that do heavy lifting locally are more reliable than exposing low-level building blocks for the LLM to orchestrate.
 
@@ -350,7 +350,7 @@ We built MCP tools and skills. A Claude Code plugin can ship more:
 
 # teamscale-dev Solves the Hard Problems
 
-`teamscale-dev` is Teamscale's CLI tool — already installed on every developer's machine. It can be registered as an MCP server in Claude Code, exposing its capabilities as tools.
+The standalone plugins we built demonstrate the value, but they have structural issues that `teamscale-dev` solves by design:
 
 | Problem | Standalone Plugin | teamscale-dev |
 |---|---|---|
@@ -364,7 +364,7 @@ We built MCP tools and skills. A Claude Code plugin can ship more:
 
 # What teamscale-dev Should Ship
 
-`teamscale-dev` already works as an MCP server. To deliver the full value, it should include:
+To deliver the full value, `teamscale-dev` should include:
 
 1. **Curated MCP tools** we proved out in the custom plugins — not auto-generated, just the tools that skills need
 2. **The skills plugin** — these are the user-facing value and work with any MCP server that exposes the right tools

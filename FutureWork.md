@@ -11,7 +11,7 @@ Both approaches are problematic. Possible improvements:
 
 ## teamscale-dev as the Natural Home for MCP Tools
 
-`teamscale-dev` is Teamscale's CLI tool, already installed on every developer's machine. It can be registered as an MCP server in Claude Code, exposing its capabilities as tools. This makes it the most appropriate place to host Teamscale's MCP tools -- it solves the API version mismatch problem (see Observations), handles heavy lifting like pre-commit analysis locally in the CLI process, and doesn't require a separate plugin install or maintenance. Rather than maintaining standalone MCP server plugins, investing in `teamscale-dev`'s MCP capabilities is the most sustainable path forward.
+`teamscale-dev` can be registered as an MCP server in Claude Code. This makes it the most appropriate place to host Teamscale's MCP tools -- it solves the API version mismatch problem (see Observations), handles heavy lifting like pre-commit analysis locally in the CLI process, and doesn't require a separate plugin install or maintenance. Rather than maintaining standalone MCP server plugins, investing in `teamscale-dev`'s MCP capabilities is the most sustainable path forward.
 
 ## Hosting Options
 
