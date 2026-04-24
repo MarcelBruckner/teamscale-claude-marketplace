@@ -37,7 +37,9 @@ From the returned list, find merge requests whose `mergeRequest.sourceBranch` eq
 
 **Exactly one match:** Use it. Tell the user which MR was found: its title and source branch -> target branch.
 
-**No match:** Show the full list of open MRs (title, source branch -> target branch for each) and ask the user to pick one.
+**No match but list is non-empty:** Show the full list of open MRs (title, source branch -> target branch for each) and ask the user to pick one.
+
+**No open MRs at all:** Tell the user: "No open merge requests found for this project." Then stop.
 
 **Multiple matches:** Show the matching MRs (title, source branch -> target branch for each) and ask the user to pick one.
 
@@ -63,8 +65,8 @@ Format the results as a structured summary.
 - Group findings by `location.uniformPath`
 - For each file that has findings, show the file path as a subheading
 - For each finding in that file, show:
-  - Line: `location.rawStartLine` (if available)
-  - Assessment: the `assessment` value
+  - Location: `location.location` (if available, this is a human-readable string like `"ClassName.java:42-50"`)
+  - Assessment: the `assessment` value (if present; some findings may not have an assessment)
   - Category: `categoryName`
   - Message: `message`
 
