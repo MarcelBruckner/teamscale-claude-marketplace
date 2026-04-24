@@ -19,6 +19,11 @@
       "name": "teamscale-typescript-custom",
       "source": "./plugins/teamscale-typescript-custom",
       "description": "Hand-crafted MCP tools for common Teamscale workflows (TypeScript implementation)."
+    },
+    {
+      "name": "teamscale-skills",
+      "source": "./plugins/teamscale-skills",
+      "description": "Skills for Claude to work with Teamscale."
     }
   ]
 }
