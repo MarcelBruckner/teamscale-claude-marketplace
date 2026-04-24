@@ -474,6 +474,31 @@ async def pre_commit_upload(
     return result.to_dict()
 
 
+@MCP.tool()
+@teamscale_tool
+async def pre_commit_poll(
+    project: str,
+    token: str,
+    server: str | None = None,
+    user: str | None = None,
+    access_key: str | None = None,
+    fetch: Callable[[Awaitable], Awaitable] | None = None,
+) -> dict:
+    """Poll for pre-commit analysis results using a token from pre_commit_upload.
+
+    Analysis is complete when the returned token field is absent or empty.
+    """
+    client = resolve_connection(server, user, access_key)
+    response = await fetch(
+        poll_pre_commit_results.asyncio_detailed(
+            project=project,
+            token=token,
+            client=client,
+        ),
+    )
+    return response.parsed.to_dict()
+
+
 def main():
     MCP.run(transport="stdio")
 
