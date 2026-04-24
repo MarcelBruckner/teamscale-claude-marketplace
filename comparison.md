@@ -171,7 +171,7 @@ Without skills, the user must know which tools exist, in what order to call them
 With skills, the user just says what they want to accomplish.
 
 ```
-/teamscale-skills:pre-commit               # "check my changes"
+/teamscale-skills:pre-commit                # "check my changes"
 /teamscale-skills:merge-request-findings    # "what did my MR break?"
 /teamscale-skills:fix-findings              # "fix them"
 ```
@@ -193,20 +193,23 @@ With skills, the user just says what they want to accomplish.
 # A Typical Developer Workflow
 
 ```
-# 1. See what findings your MR introduced
-/teamscale-skills:merge-request-findings
+# 1. Run pre-commit analysis on local changes
+/teamscale-skills:pre-commit
 
-# 2. Fix them interactively
+# 2. Fix the findings interactively
 /teamscale-skills:fix-findings
 
-# 3. Check test coverage gaps
+# 3. See what findings your MR introduced
+/teamscale-skills:merge-request-findings
+
+# 4. Fix them interactively
+/teamscale-skills:fix-findings
+
+# 5. Check test coverage gaps
 /teamscale-skills:merge-request-test-gaps
 
-# 4. Write missing tests / re-run impacted tests
+# 6. Write missing tests / re-run impacted tests
 /teamscale-skills:close-test-gaps
-
-# 5. Verify everything before pushing
-/teamscale-skills:pre-commit
 ```
 
 Each skill auto-detects the project and MR from the git repo. Later skills pick up context from earlier ones.
