@@ -4,19 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a Claude Code plugin marketplace containing three MCP server implementations that expose the Teamscale REST API to Claude Code. All three are distributed via the `.claude-plugin/marketplace.json` plugin system.
+This is a Claude Code plugin marketplace containing MCP server implementations that expose the Teamscale REST API to Claude Code, plus a skills plugin that provides high-level workflows built on those tools. All are distributed via the `.claude-plugin/marketplace.json` plugin system.
 
 ## Architecture
 
-Three plugins, each a standalone MCP server under `plugins/`:
+Four plugins under `plugins/`:
 
-| Plugin | Approach | SDK / Framework | API Client |
-|--------|----------|-----------------|------------|
-| `teamscale-python-openapi` | Auto-generated from OpenAPI spec at startup | FastMCP `OpenAPIProvider` | Built-in (fetches spec from running Teamscale) |
-| `teamscale-python-custom` | Hand-crafted tools | `mcp[cli]` (official Python SDK) | `openapi-python-client` (generated from local `teamscale-openapi.json`) |
-| `teamscale-typescript-custom` | Hand-crafted tools | `@modelcontextprotocol/sdk` | `@hey-api/openapi-ts` (generated from local `teamscale-openapi.json`) |
+| Plugin | Type | Description |
+|--------|------|-------------|
+| `teamscale-python-openapi` | MCP server | Auto-generated tools from OpenAPI spec at startup |
+| `teamscale-python-custom` | MCP server | Hand-crafted tools with `mcp[cli]` + `openapi-python-client` |
+| `teamscale-typescript-custom` | MCP server | Hand-crafted tools with `@modelcontextprotocol/sdk` + `@hey-api/openapi-ts` |
+| `teamscale-skills` | Skills plugin | Claude Code skills that orchestrate MCP tools into multi-step workflows |
 
-The two custom plugins expose identical tools and share the same architecture. Both use a generated REST client from the bundled `teamscale-openapi.json` spec, and both support optional connection params (server/user/access_key) per tool call with env-var fallback.
+The two custom MCP plugins expose identical tools and share the same architecture. Both use a generated REST client from the bundled `teamscale-openapi.json` spec, and both support optional connection params (server/user/access_key) per tool call with env-var fallback.
+
+### Skills plugin
+
+`teamscale-skills` contains Markdown skill files at `plugins/teamscale-skills/skills/<name>/Skill.md`. Each skill is a YAML-frontmatter Markdown file that instructs Claude Code how to perform a multi-step workflow using MCP tools and built-in tools (Read, Edit, Bash, Glob). Skills do not contain code — they are instructions.
+
+Current skills:
+- `pre-commit` — run Teamscale pre-commit analysis on uncommitted changes
+- `merge-request-findings` — fetch and present findings for the current MR
+- `fix-findings` — propose and apply code fixes for findings with user confirmation
+- `merge-request-test-gaps` — show test gap analysis for the current MR
+- `close-test-gaps` — propose tests for untested methods / suggest test runs for modified methods
 
 ### Plugin entry flow
 
@@ -83,3 +95,25 @@ TEAMSCALE_URL=... TEAMSCALE_USER=... TEAMSCALE_ACCESS_KEY=... \
 - **`teamscaleFetch` function** (TypeScript custom): same error-handling pattern as the Python decorator but as a standalone async function.
 - **`textResult` helper** (TypeScript): wraps return values into the MCP text content format (`{ content: [{ type: "text", text: JSON.stringify(...) }] }`). The Python SDK handles this automatically.
 - **OpenAPI route mapping** (Python OpenAPI): `custom_route_mapper` classifies GET endpoints as resources/resource-templates and non-GET as tools (only if `ENABLE_TOOLS` is set, otherwise excluded).
+
+## Adding new tools
+
+When adding a new MCP tool to the Python custom server:
+
+1. Check if the generated REST client already has the endpoint function under `teamscale-rest-api-client/teamscale_rest_api_client/api/`. If not, regenerate with `./generate-client.sh`.
+2. Add the import at the top of `server.py`, aliased to avoid name collisions (e.g. `from ... import get_finding as api_get_finding`).
+3. Add the tool function following the `@MCP.tool()` + `@teamscale_tool` pattern with `server`/`user`/`access_key`/`fetch` params.
+4. Verify with `uv run python -c "import server; print('OK')"`.
+5. When calling generated client functions, convert `None` to `UNSET` for optional params.
+6. Use `response.parsed.to_dict()` to return structured data, or `response.parsed` for primitives.
+
+## Adding new skills
+
+Skills are Markdown files at `plugins/teamscale-skills/skills/<name>/Skill.md` with YAML frontmatter (`name` and `description`). They instruct Claude Code step-by-step and reference MCP tools by their function name. See existing skills for the pattern.
+
+## Teamscale API conventions
+
+- **Commit descriptors**: format `branch:HEAD` or `branch:timestamp`. Used by finding-churn and test-gap endpoints.
+- **Merge request identifier**: format `connectorId/mrNumber`, from `mergeRequest.identifier.idWithRepository`.
+- **Test gap treemap**: requires `baseline=sourceBranch:HEAD`, `end=targetBranch:HEAD` (counterintuitive — baseline is the feature branch), plus `merge_request_mode=True`, `exclude_unchanged_methods=True`, `auto_select_branch=False`.
+- **Project detection**: `get_project_id` matches by comparing `git remote get-url origin` against connector URLs. Supports GitHub, GitLab, and Stash/Bitbucket connector types.
