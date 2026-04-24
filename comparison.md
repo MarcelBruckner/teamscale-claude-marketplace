@@ -7,7 +7,7 @@ style: |
   section {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: #333;
-    border-left: 8px solid transparent;
+    border-left: 16px solid transparent;
     border-image: linear-gradient(to bottom, #bbb 0%, #bbb 30%, #E87722 30%, #E87722 100%) 1;
   }
   section.lead h1 {
