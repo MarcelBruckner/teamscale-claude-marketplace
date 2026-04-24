@@ -36,7 +36,7 @@ The core of this marketplace. Skills are high-level workflows that combine Teams
 
    ```
    /plugins install teamscale-skills
-   /plugins install teamscale-python-custom
+   /plugins install teamscale-dev
    ```
 
 3. Reload:
@@ -53,11 +53,12 @@ The skills are powered by MCP server plugins that expose the Teamscale REST API 
 
 | Plugin | Description |
 |--------|-------------|
-| [`teamscale-python-custom`](plugins/teamscale-python-custom/) | **Recommended.** Hand-crafted MCP tools for Teamscale workflows (Python). |
+| [`teamscale-dev`](plugins/teamscale-dev/) | **Recommended.** Uses the [`teamscale-dev` CLI](https://docs.teamscale.com/reference/cli/teamscale-dev/) as an MCP server. Requires `teamscale-dev` on PATH. |
+| [`teamscale-python-custom`](plugins/teamscale-python-custom/) | Hand-crafted MCP tools for Teamscale workflows (Python). |
 | [`teamscale-typescript-custom`](plugins/teamscale-typescript-custom/) | Same tools as the Python version, for TypeScript environments. |
 | [`teamscale-python-openapi`](plugins/teamscale-python-openapi/) | Auto-generated from the full OpenAPI spec. Exposes all endpoints but less curated. |
 
-The two custom plugins expose identical tools and share the same architecture. Both use a generated REST client from the bundled `teamscale-openapi.json` spec.
+The `teamscale-dev` plugin delegates to the built-in MCP server mode of the Teamscale CLI — no code generation or runtime dependencies beyond the CLI itself. The two custom plugins expose identical tools and share the same architecture. Both use a generated REST client from the bundled `teamscale-openapi.json` spec.
 
 ## What is MCP?
 
@@ -76,15 +77,16 @@ For building your own MCP servers, see the [MCP SDK overview](https://modelconte
 2. Install the plugins you need:
 
    ```
-   /plugins install teamscale-python-custom
+   /plugins install teamscale-dev
    /plugins install teamscale-skills
    ```
 
    Other MCP server options (choose one):
 
    ```
-   /plugins install teamscale-python-openapi
+   /plugins install teamscale-python-custom
    /plugins install teamscale-typescript-custom
+   /plugins install teamscale-python-openapi
    ```
 
 3. Reload plugins to apply changes:
@@ -144,6 +146,7 @@ claude --debug
 ## Reference
 
 - [teamscale-skills](plugins/teamscale-skills/README.md) — all available skills
+- [teamscale-dev](plugins/teamscale-dev/README.md) — MCP server via teamscale-dev CLI
 - [teamscale-python-custom](plugins/teamscale-python-custom/README.md#available-tools) — MCP tools (Python)
 - [teamscale-typescript-custom](plugins/teamscale-typescript-custom/README.md#available-tools) — MCP tools (TypeScript)
 - [teamscale-python-openapi](plugins/teamscale-python-openapi/README.md#available-resources-and-resource-templates) — auto-generated resources and tools
@@ -151,6 +154,8 @@ claude --debug
 ## Configuration
 
 The plugins can be configured with environment variables to connect to your Teamscale instance.
+
+**The `teamscale-dev` plugin** uses its own configuration: `.teamscale.toml` files and `TEAMSCALE_DEV_*` environment variables. See the [teamscale-dev documentation](https://docs.teamscale.com/reference/cli/teamscale-dev/) for details.
 
 **For the custom plugins (`teamscale-python-custom` and `teamscale-typescript-custom`), all environment variables are optional.** If not set, Claude will ask for the connection details (server URL, user, access key) as tool parameters at runtime. This means you can install and use the custom plugins without any upfront configuration.
 

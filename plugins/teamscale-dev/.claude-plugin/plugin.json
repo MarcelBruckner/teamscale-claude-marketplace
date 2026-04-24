@@ -1,0 +1,17 @@
+{
+  "name": "teamscale-dev",
+  "version": "0.1.0",
+  "description": "MCP server powered by the teamscale-dev CLI — exposes Teamscale CLI commands as MCP tools.",
+  "mcpServers": {
+    "teamscale": {
+      "command": "teamscale-dev",
+      "args": ["mcp"],
+      "env": {
+        "TEAMSCALE_DEV_SERVERS": "${TEAMSCALE_DEV_SERVERS}",
+        "TEAMSCALE_DEV_USER": "${TEAMSCALE_DEV_USER}",
+        "TEAMSCALE_DEV_ACCESSKEY": "${TEAMSCALE_DEV_ACCESSKEY}"
+      },
+      "mcpConnectionTimeout": 60000
+    }
+  }
+}

@@ -24,6 +24,11 @@
       "name": "teamscale-skills",
       "source": "./plugins/teamscale-skills",
       "description": "Skills for Claude to work with Teamscale."
+    },
+    {
+      "name": "teamscale-dev",
+      "source": "./plugins/teamscale-dev",
+      "description": "MCP server powered by the teamscale-dev CLI (requires teamscale-dev on PATH)."
     }
   ]
 }

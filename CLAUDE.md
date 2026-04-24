@@ -12,6 +12,7 @@ Four plugins under `plugins/`:
 
 | Plugin | Type | Description |
 |--------|------|-------------|
+| `teamscale-dev` | MCP server | Delegates to `teamscale-dev mcp` — the built-in MCP mode of the Teamscale CLI |
 | `teamscale-python-openapi` | MCP server | Auto-generated tools from OpenAPI spec at startup |
 | `teamscale-python-custom` | MCP server | Hand-crafted tools with `mcp[cli]` + `openapi-python-client` |
 | `teamscale-typescript-custom` | MCP server | Hand-crafted tools with `@modelcontextprotocol/sdk` + `@hey-api/openapi-ts` |
@@ -32,13 +33,14 @@ Current skills:
 
 ### Plugin entry flow
 
-Each plugin has a `start-server.{py,js}` at its root that bootstraps the server:
-- **Python custom**: runs `generate-client.sh` then `uv run python server.py`
-- **TypeScript custom**: runs `npm install` (if needed), `generate-client.sh` + `tsc` (if `dist/` missing), then `node dist/server.js`
+- **teamscale-dev**: runs `teamscale-dev mcp` directly — no build step, no generated client. Requires `teamscale-dev` on PATH.
+- **Python custom**: has a `start-server.py` that runs `generate-client.sh` then `uv run python server.py`
+- **TypeScript custom**: has a `start-server.js` that runs `npm install` (if needed), `generate-client.sh` + `tsc` (if `dist/` missing), then `node dist/server.js`
 - **Python OpenAPI**: launched directly via `uv run python server.py` (no client generation step; fetches OpenAPI spec live from Teamscale)
 
 ### Connection handling
 
+- **teamscale-dev plugin**: uses `.teamscale.toml` files and `TEAMSCALE_DEV_SERVERS`/`TEAMSCALE_DEV_USER`/`TEAMSCALE_DEV_ACCESSKEY` env vars. See [teamscale-dev docs](https://docs.teamscale.com/reference/cli/teamscale-dev/).
 - **OpenAPI plugin**: requires `TEAMSCALE_URL`, `TEAMSCALE_USER`, `TEAMSCALE_ACCESS_KEY` env vars; exits on missing.
 - **Custom plugins**: env vars optional. Each tool accepts `server`/`user`/`access_key` params; `resolveConnection()` falls back to env vars.
 
