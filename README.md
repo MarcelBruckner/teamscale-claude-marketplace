@@ -1,49 +1,69 @@
 # teamscale-claude-marketplace
 
-A marketplace for Claude Code plugins by the Teamscale team.
+Bring Teamscale's code quality analysis directly into your Claude Code workflow. This marketplace provides Claude Code plugins that connect to the [Teamscale](https://teamscale.com) REST API, giving you **skills** — interactive workflows that analyze findings, close test gaps, and fix code quality issues right from the command line.
+
+## Skills
+
+The core of this marketplace. Skills are high-level workflows that combine Teamscale analysis with Claude Code's ability to read, edit, and run code:
+
+| Skill | What it does |
+|-------|-------------|
+| `/teamscale-skills:pre-commit` | Run Teamscale pre-commit analysis on your uncommitted changes. Shows findings grouped by file with severity, category, and message. |
+| `/teamscale-skills:merge-request-findings` | Fetch findings for the merge request on your current branch. Auto-detects the MR, shows added findings and findings in changed code. |
+| `/teamscale-skills:fix-findings` | Walk through findings one by one, propose concrete code fixes, and apply them with your confirmation. Works standalone or picks up findings from a prior analysis run. |
+| `/teamscale-skills:merge-request-test-gaps` | Show which methods changed in your MR lack test coverage. Displays a tested-ratio summary and per-file detail of untested methods. |
+| `/teamscale-skills:close-test-gaps` | For new untested methods, proposes and writes tests matching your project's framework. For modified methods, fetches Teamscale's impacted test suggestions so you know which tests to re-run. |
+
+### Typical workflow
+
+```
+/teamscale-skills:merge-request-findings   # see what findings your MR introduced
+/teamscale-skills:fix-findings             # fix them interactively
+/teamscale-skills:merge-request-test-gaps  # check test coverage gaps
+/teamscale-skills:close-test-gaps          # write missing tests / re-run impacted tests
+/teamscale-skills:pre-commit               # verify everything before pushing
+```
+
+## Installation
+
+1. Register the marketplace:
+
+   ```
+   /plugins marketplace add https://github.com/MarcelBruckner/teamscale-claude-marketplace.git
+   ```
+
+2. Install the skills and an MCP server (the skills need it for Teamscale API access):
+
+   ```
+   /plugins install teamscale-skills
+   /plugins install teamscale-python-custom
+   ```
+
+3. Reload:
+
+   ```
+   /reload-plugins
+   ```
+
+That's it. The MCP server connects to Teamscale automatically if you have `TEAMSCALE_URL`, `TEAMSCALE_USER`, and `TEAMSCALE_ACCESS_KEY` set in your environment. If not, Claude will ask for them at runtime.
+
+## MCP Server Plugins
+
+The skills are powered by MCP server plugins that expose the Teamscale REST API as tools Claude can call. Three implementations are available — choose one:
+
+| Plugin | Description |
+|--------|-------------|
+| [`teamscale-python-custom`](plugins/teamscale-python-custom/) | **Recommended.** Hand-crafted MCP tools for Teamscale workflows (Python). |
+| [`teamscale-typescript-custom`](plugins/teamscale-typescript-custom/) | Same tools as the Python version, for TypeScript environments. |
+| [`teamscale-python-openapi`](plugins/teamscale-python-openapi/) | Auto-generated from the full OpenAPI spec. Exposes all endpoints but less curated. |
+
+The two custom plugins expose identical tools and share the same architecture. Both use a generated REST client from the bundled `teamscale-openapi.json` spec.
 
 ## What is MCP?
 
-The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is an open standard for connecting AI assistants to external tools and data sources. MCP servers expose **tools** (actions the AI can invoke), **resources** (data it can read), and **prompts** (reusable templates) over a lightweight JSON-RPC transport. The plugins in this marketplace are MCP servers that give Claude Code access to the Teamscale REST API.
+The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is an open standard for connecting AI assistants to external tools and data sources. MCP servers expose **tools** (actions the AI can invoke), **resources** (data it can read), and **prompts** (reusable templates) over a lightweight JSON-RPC transport.
 
-### Building your own MCP server
-
-Official SDKs are available in multiple languages, organized into tiers by feature completeness and maintenance commitment:
-
-| Tier | Languages | What it means |
-|------|-----------|---------------|
-| **Tier 1** | **TypeScript, Python, C#, Go** | Full feature parity, actively maintained by the MCP team |
-| Tier 2 | Java, Rust | Approaching full support, actively developed |
-| Tier 3 | Swift, Ruby, PHP | Early-stage or community-driven |
-
-**TypeScript** and **Python** are the most mature choices and have the broadest ecosystem of examples and documentation. The plugins in this marketplace use **Python** with the [FastMCP](https://github.com/jlowin/fastmcp) framework and **TypeScript** with the [@modelcontextprotocol/sdk](https://github.com/modelcontextprotocol/typescript-sdk).
-
-For further reading, see the [MCP SDK overview](https://modelcontextprotocol.io/docs/sdk) and the [SDK tiering system](https://modelcontextprotocol.io/community/sdk-tiers).
-
-## Plugins
-
-| Plugin | Type | Description |
-|--------|------|-------------|
-| [`teamscale-python-openapi`](plugins/teamscale-python-openapi/) | MCP server | Auto-generated from the Teamscale OpenAPI spec. Exposes all GET endpoints as MCP resources and optionally all write endpoints as MCP tools. |
-| [`teamscale-python-custom`](plugins/teamscale-python-custom/) | MCP server | Hand-crafted MCP tools for common Teamscale workflows (Python implementation). |
-| [`teamscale-typescript-custom`](plugins/teamscale-typescript-custom/) | MCP server | Hand-crafted MCP tools for common Teamscale workflows (TypeScript implementation). |
-| [`teamscale-skills`](plugins/teamscale-skills/) | Skills | Claude Code skills that orchestrate MCP tools into multi-step workflows. |
-
-The two custom MCP plugins (`teamscale-python-custom` and `teamscale-typescript-custom`) expose identical tools and share the same architecture — choose whichever language fits your environment. Both use a generated REST API client for type-safe access to the Teamscale API.
-
-### Skills
-
-The `teamscale-skills` plugin provides high-level workflows that combine MCP tools with Claude Code's built-in capabilities (reading files, editing code, running commands):
-
-| Skill | Description |
-|-------|-------------|
-| `pre-commit` | Run Teamscale pre-commit analysis on uncommitted changes and present findings. |
-| `merge-request-findings` | Fetch and present findings for the merge request on the current branch. |
-| `fix-findings` | Propose and apply code fixes for findings with user confirmation. |
-| `merge-request-test-gaps` | Show test gap analysis for the current MR — which changed methods lack coverage. |
-| `close-test-gaps` | For untested new methods, propose tests. For modified methods, suggest which existing tests to re-run. |
-
-Skills require one of the custom MCP server plugins to be installed. Use them via `/teamscale-skills:<skill-name>` (e.g. `/teamscale-skills:pre-commit`).
+For building your own MCP servers, see the [MCP SDK overview](https://modelcontextprotocol.io/docs/sdk). This marketplace uses **Python** with [FastMCP](https://github.com/jlowin/fastmcp) and **TypeScript** with [@modelcontextprotocol/sdk](https://github.com/modelcontextprotocol/typescript-sdk).
 
 ## Installation
 
@@ -121,14 +141,12 @@ For detailed logs, start Claude Code in debug mode:
 claude --debug
 ```
 
-## Available Tools, Resources, and Skills
+## Reference
 
-Each plugin README contains the full list of available MCP tools and resources:
-
-- [teamscale-python-openapi](plugins/teamscale-python-openapi/README.md#available-resources-and-resource-templates) — auto-generated resources, resource templates, and tools
-- [teamscale-python-custom](plugins/teamscale-python-custom/README.md#available-tools) — hand-crafted tools (Python implementation)
-- [teamscale-typescript-custom](plugins/teamscale-typescript-custom/README.md#available-tools) — hand-crafted tools (TypeScript implementation)
-- [teamscale-skills](plugins/teamscale-skills/README.md) — skills for pre-commit analysis, MR findings, fixing findings, test gaps, and closing test gaps
+- [teamscale-skills](plugins/teamscale-skills/README.md) — all available skills
+- [teamscale-python-custom](plugins/teamscale-python-custom/README.md#available-tools) — MCP tools (Python)
+- [teamscale-typescript-custom](plugins/teamscale-typescript-custom/README.md#available-tools) — MCP tools (TypeScript)
+- [teamscale-python-openapi](plugins/teamscale-python-openapi/README.md#available-resources-and-resource-templates) — auto-generated resources and tools
 
 ## Configuration
 
