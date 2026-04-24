@@ -253,9 +253,9 @@ We started from developer workflows:
 
 The pre-commit skill sends file contents through the LLM as MCP tool parameters. This hits payload size limits — Claude silently strips comments/constants to fit, producing **false findings**.
 
-A server-side approach (like `teamscale-dev`) reads files directly from disk with no size limits or content mangling. The LLM makes one tool call and gets clean results.
+`teamscale-dev` (Teamscale's CLI tool, usable as an MCP server) handles this natively — it reads files directly from disk with no size limits or content mangling. The LLM makes one tool call and gets clean results.
 
-**Takeaway:** MCP tools that do heavy lifting in the server process are more reliable than exposing low-level building blocks for the LLM to orchestrate.
+**Takeaway:** MCP tools that do heavy lifting locally are more reliable than exposing low-level building blocks for the LLM to orchestrate.
 
 ---
 
@@ -266,7 +266,7 @@ The generated typed clients (from `openapi-python-client` / `@hey-api/openapi-ts
 This makes the plugin fragile. Any Teamscale update that changes response shapes breaks tools even if the endpoint still works fine.
 
 **Alternatives:**
-- Ship the MCP server with `teamscale-dev` (stays in sync automatically)
+- Build MCP tools into `teamscale-dev` (stays in sync with Teamscale automatically)
 - Skip the generated client, use plain HTTP calls with the OpenAPI spec as reference
 
 ---
@@ -335,9 +335,9 @@ We built MCP tools and skills. A Claude Code plugin can ship more:
 
 | | Standalone Plugin | teamscale-dev | Standalone Server | Integrated in Teamscale |
 |---|---|---|---|---|
-| **Local install** | Yes | Already installed | No | No |
+| **Local install** | Separate plugin | Already on the machine | No | No |
 | **Up-to-date** | User updates | With teamscale-dev | OPS updates | With Teamscale updates |
-| **API version sync** | Manual | Automatic | Manual | Automatic |
+| **API version sync** | Manual (spec bundled) | Automatic | Manual | Automatic |
 | **Auth solved** | ❌ | ✅ | ❌ | ✅ |
 
 ---
@@ -350,25 +350,25 @@ We built MCP tools and skills. A Claude Code plugin can ship more:
 
 # teamscale-dev Solves the Hard Problems
 
-The standalone plugins we built demonstrate the value, but they have structural issues that `teamscale-dev` solves by design:
+`teamscale-dev` is Teamscale's CLI tool — already installed on every developer's machine. It can be registered as an MCP server in Claude Code, exposing its capabilities as tools.
 
 | Problem | Standalone Plugin | teamscale-dev |
 |---|---|---|
-| **API version drift** | Bundled spec goes stale | Stays in sync automatically |
-| **Pre-commit payload limits** | LLM mangling, false findings | Server-side file reading, no limits |
+| **API version drift** | Bundled spec goes stale | Always matches the Teamscale version |
+| **Pre-commit payload** | LLM mangling, false findings | Reads files from disk, no limits |
 | **Authentication** | Env vars or in-prompt (insecure) | Already manages credentials |
-| **Installation** | Separate plugin install | Already on the developer's machine |
+| **Installation** | Separate plugin install | Already on the machine |
 | **Maintenance** | Separate repo, manual updates | Ships with Teamscale |
 
 ---
 
 # What teamscale-dev Should Ship
 
-The MCP server in `teamscale-dev` should include:
+`teamscale-dev` already works as an MCP server. To deliver the full value, it should include:
 
-1. **The curated MCP tools** we proved out in the custom plugins — not auto-generated, not exhaustive, just the tools that skills need
-2. **The skills** as a bundled plugin — these are the user-facing value and work independently of the MCP server implementation
-3. **Server-side heavy lifting** — pre-commit analysis, file reading, polling should happen in the MCP server process, not through LLM tool-call chains
+1. **Curated MCP tools** we proved out in the custom plugins — not auto-generated, just the tools that skills need
+2. **The skills plugin** — these are the user-facing value and work with any MCP server that exposes the right tools
+3. **Local heavy lifting** — pre-commit analysis, file reading, polling happen in the CLI process, not through LLM tool-call chains
 
 The standalone plugins in this marketplace are the **prototype**. `teamscale-dev` is the **production home**.
 

@@ -9,9 +9,9 @@ Both approaches are problematic. Possible improvements:
 - **System keychain** -- read from OS keychain (macOS Keychain, etc.)
 - **Local config file** -- `.teamscale.json` read by the MCP server, not exposed as tool parameters
 
-## teamscale-dev as the Natural Home for the MCP Server
+## teamscale-dev as the Natural Home for MCP Tools
 
-`teamscale-dev` already runs locally alongside the developer's IDE and stays in sync with the Teamscale version. Its built-in MCP server is the most appropriate place to host Teamscale's MCP tools -- it solves the API version mismatch problem (see Observations), handles heavy lifting like pre-commit analysis server-side, and doesn't require a separate plugin install or maintenance. Rather than maintaining standalone MCP server plugins, investing in `teamscale-dev`'s built-in server is the most sustainable path forward.
+`teamscale-dev` is Teamscale's CLI tool, already installed on every developer's machine. It can be registered as an MCP server in Claude Code, exposing its capabilities as tools. This makes it the most appropriate place to host Teamscale's MCP tools -- it solves the API version mismatch problem (see Observations), handles heavy lifting like pre-commit analysis locally in the CLI process, and doesn't require a separate plugin install or maintenance. Rather than maintaining standalone MCP server plugins, investing in `teamscale-dev`'s MCP capabilities is the most sustainable path forward.
 
 ## Hosting Options
 
@@ -25,7 +25,7 @@ Currently the MCP server runs locally on the developer's machine. Alternative de
 | **API version sync** | Manual (spec bundled) | Automatic | Manual | Automatic |
 | **Authentication** | Env vars or in-prompt (insecure) | Already handled | Open problem | Already handled |
 
-`teamscale-dev` is the sweet spot -- no extra install, no version drift, no separate maintenance, and authentication is already solved since `teamscale-dev` manages credentials independently of the LLM.
+`teamscale-dev` is the sweet spot -- already installed, no version drift, no separate maintenance, and authentication is already solved since `teamscale-dev` manages credentials independently of the LLM.
 
 ## From Tools to Workflows
 

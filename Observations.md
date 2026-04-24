@@ -15,7 +15,7 @@
 
 ## Server-side pre-commit (teamscale-dev) is superior to LLM-driven pre-commit
 
-`teamscale-dev` is a local MCP server (runs on the same machine as Claude Code) that handles the entire pre-commit workflow itself -- reading changed files from the workspace, assembling the payload, uploading to Teamscale, and polling for results. This is fundamentally better suited than having the LLM orchestrate these steps via low-level MCP tools.
+`teamscale-dev` is Teamscale's CLI tool, already installed on developer machines. It can be registered as an MCP server in Claude Code and handles the entire pre-commit workflow itself -- reading changed files from the workspace, assembling the payload, uploading to Teamscale, and polling for results. This is fundamentally better suited than having the LLM orchestrate these steps via low-level MCP tools.
 
 **Why the LLM approach is problematic:**
 - The LLM has to read file contents, which are subject to tool payload size limits (see above). It may silently truncate or modify content to fit, producing false findings.
@@ -36,7 +36,7 @@ Our approach generates typed REST clients (via `openapi-python-client` / `@hey-a
 This makes the plugin fragile -- any Teamscale update that changes response shapes (new fields, renamed fields, changed types) will cause failures even if the endpoint itself still works fine.
 
 **Alternatives:**
-- `teamscale-dev` would be more appropriate here since it's maintained alongside Teamscale and stays in sync with the API.
+- `teamscale-dev` (Teamscale's CLI tool, usable as MCP server) would be more appropriate here since it's maintained alongside Teamscale and stays in sync with the API.
 - A more resilient middle ground: skip the generated client entirely, give the MCP server the OpenAPI spec as reference, and have the tools make plain HTTP calls. This avoids strict schema validation on responses and tolerates minor API drift gracefully -- a missing or extra field in the response won't crash the tool.
 
 ## Skills are what makes MCP servers useful
