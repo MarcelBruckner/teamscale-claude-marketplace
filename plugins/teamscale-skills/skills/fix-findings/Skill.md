@@ -53,7 +53,7 @@ Call the `get_finding` MCP tool with:
 - `project`: the Teamscale project ID from step 2
 - `id`: the finding's ID
 
-This returns the full finding with message, properties, secondary locations, and other details needed to understand the issue.
+This returns the full finding with message, properties, secondary locations, and other details needed to understand the issue. If the tool errors (e.g. finding not found), tell the user and skip to the next finding.
 
 **4b. Read the source file**
 
