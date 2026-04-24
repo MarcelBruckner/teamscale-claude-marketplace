@@ -58,25 +58,42 @@ Look for existing test files near the source file:
 - Search for files matching patterns like `*Test*`, `*Spec*`, `test_*` in the same directory or adjacent `test/`/`tests/` directories using the Glob tool.
 - Read one or two existing test files to detect: test framework (JUnit, pytest, Jest, etc.), naming conventions, import patterns, assertion style.
 
-**4c. Propose a test**
+**4c. Handle based on state**
 
-Based on the source method and detected test conventions, propose a test. Show the user:
+The action depends on the method's test gap state:
+
+**UNTESTED_ADDITION** (new method without any tests):
+
+This method needs a new test. Based on the source method and detected test conventions, propose a test. Show the user:
 1. A brief explanation of what the method does
 2. The proposed test code (matching the project's test framework and style)
 3. Which file the test should be added to (existing test file or new one)
 
-**4d. Ask for confirmation**
-
 Ask the user: "Apply this test? (yes / skip / stop)"
-
 - **yes:** Write or edit the test file using the Write or Edit tool. Tell the user the test was added. Continue to the next method.
-- **skip:** Tell the user this method was skipped. Continue to the next method.
-- **stop:** End the loop immediately. Go to step 5.
+- **skip:** Skip this method. Continue to the next.
+- **stop:** End the loop. Go to step 5.
+
+**UNTESTED_CHANGE** (existing method modified but not re-tested):
+
+This method already has tests but they haven't been run since the modification. Find the existing tests that cover this method:
+1. Search for test files that reference the method name or the class it belongs to.
+2. Read those test files to identify relevant test cases.
+
+Show the user:
+1. Which existing tests likely cover this method
+2. The commands to run those specific tests
+
+Ask the user: "Run these tests? (yes / skip / stop)"
+- **yes:** Run the suggested test commands via Bash. Report the results. Continue to the next method.
+- **skip:** Skip this method. Continue to the next.
+- **stop:** End the loop. Go to step 5.
 
 ### 5. Wrap up
 
 Present a summary:
-- Number of test gaps closed
+- Number of new tests written (UNTESTED_ADDITION)
+- Number of existing tests re-run (UNTESTED_CHANGE)
 - Number of methods skipped
 - Number of methods remaining (if stopped early)
 
