@@ -371,6 +371,23 @@ The plugin ships **skills only** and points to `teamscale-dev` as the MCP server
 
 ---
 
+# teamscale-dev Plugin Is Live
+
+The `teamscale-dev` MCP server plugin is already available in this marketplace:
+
+```
+/plugins marketplace add https://github.com/MarcelBruckner/teamscale-claude-marketplace.git
+/plugins install teamscale-dev
+/plugins install teamscale-skills
+/reload-plugins
+```
+
+No Python, no Node.js, no generated clients — just `teamscale-dev` on your PATH.
+
+Skills orchestrate its tools. Authentication and API versioning are handled by the CLI.
+
+---
+
 <!-- _class: lead -->
 
 # 💬 Questions?
