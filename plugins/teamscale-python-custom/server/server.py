@@ -18,6 +18,7 @@ from teamscale_rest_api_client.api.dashboards import get_all_dashboards
 from teamscale_rest_api_client.api.architecture import get_all_architecture_assessments, get_architecture_assessment
 from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
 from teamscale_rest_api_client.api.merge_requests import list_merge_requests as api_list_merge_requests, get_merge_request_finding_churn as api_get_merge_request_finding_churn
+from teamscale_rest_api_client.api.test_coverage import get_tga_test_coverage_partitions as api_get_test_gap_partitions
 from teamscale_rest_api_client.models.e_log_level import ELogLevel
 from teamscale_rest_api_client.models.e_merge_request_status import EMergeRequestStatus
 from teamscale_rest_api_client.models.request_pre_commit_analysis_body import RequestPreCommitAnalysisBody
@@ -524,6 +525,29 @@ async def get_merge_request_finding_churn(
         target=target,
     ))
     return response.parsed.to_dict()
+
+
+@MCP.tool()
+@teamscale_tool
+async def get_test_gap_partitions(
+    project: str,
+    t: str | None = None,
+    server: str | None = None,
+    user: str | None = None,
+    access_key: str | None = None,
+    fetch: Callable[[Awaitable], Awaitable] | None = None,
+) -> list[str]:
+    """Get available test coverage partitions for test gap analysis.
+
+    Returns the list of partition names available for TGA in the project.
+    """
+    client = resolve_connection(server, user, access_key)
+    response = await fetch(api_get_test_gap_partitions.asyncio_detailed(
+        project=project,
+        client=client,
+        t=t if t is not None else UNSET,
+    ))
+    return response.parsed
 
 
 @MCP.tool()
