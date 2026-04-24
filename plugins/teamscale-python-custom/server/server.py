@@ -17,8 +17,9 @@ from teamscale_rest_api_client.api.findings import get_finding as api_get_findin
 from teamscale_rest_api_client.api.dashboards import get_all_dashboards
 from teamscale_rest_api_client.api.architecture import get_all_architecture_assessments, get_architecture_assessment
 from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
-from teamscale_rest_api_client.api.merge_requests import get_merge_request_finding_churn as api_get_merge_request_finding_churn
+from teamscale_rest_api_client.api.merge_requests import list_merge_requests as api_list_merge_requests, get_merge_request_finding_churn as api_get_merge_request_finding_churn
 from teamscale_rest_api_client.models.e_log_level import ELogLevel
+from teamscale_rest_api_client.models.e_merge_request_status import EMergeRequestStatus
 from teamscale_rest_api_client.models.request_pre_commit_analysis_body import RequestPreCommitAnalysisBody
 from teamscale_rest_api_client.models.pre_commit_3_result import PreCommit3Result
 from teamscale_rest_api_client.types import UNSET
@@ -489,23 +490,14 @@ async def list_merge_requests(
     Use filter for a case-insensitive regex match on the MR list.
     """
     client = resolve_connection(server, user, access_key)
-    params: dict[str, Any] = {"max": -1}
-    if status is not None:
-        params["status"] = status
-    if filter is not None:
-        params["filter"] = filter
-    raw = await client.get_async_httpx_client().request(
-        method="get",
-        url=f"/api/projects/{project}/merge-requests",
-        params=params,
-    )
-    if raw.status_code == 401:
-        raise PermissionError("Authentication failed: check user and access_key")
-    if raw.status_code == 403:
-        raise PermissionError("Access denied: the user does not have permission")
-    if raw.status_code != 200:
-        raise RuntimeError(f"Teamscale returned unexpected status {raw.status_code}")
-    return raw.json().get("mergeRequests", [])
+    response = await fetch(api_list_merge_requests.asyncio_detailed(
+        project=project,
+        client=client,
+        status=EMergeRequestStatus(status) if status is not None else UNSET,
+        filter_=filter if filter is not None else UNSET,
+        max_=-1,
+    ))
+    return [mr.to_dict() for mr in response.parsed.merge_requests]
 
 
 @MCP.tool()
