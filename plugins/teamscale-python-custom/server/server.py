@@ -17,7 +17,7 @@ from teamscale_rest_api_client.api.findings import get_finding as api_get_findin
 from teamscale_rest_api_client.api.dashboards import get_all_dashboards
 from teamscale_rest_api_client.api.architecture import get_all_architecture_assessments, get_architecture_assessment
 from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
-from teamscale_rest_api_client.api.merge_requests import list_merge_requests as api_list_merge_requests, get_merge_request_finding_churn as api_get_merge_request_finding_churn
+from teamscale_rest_api_client.api.merge_requests import list_merge_requests as api_list_merge_requests, get_merge_request_finding_churn as api_get_merge_request_finding_churn, get_merge_request_test_suggestions as api_get_merge_request_test_suggestions
 from teamscale_rest_api_client.api.test_coverage import get_tga_test_coverage_partitions as api_get_test_gap_partitions
 from teamscale_rest_api_client.api.test_gap_analysis import get_test_gap_tree_map as api_get_test_gap_treemap
 from teamscale_rest_api_client.models.e_log_level import ELogLevel
@@ -524,6 +524,41 @@ async def get_merge_request_finding_churn(
         client=client,
         source=source,
         target=target,
+    ))
+    return response.parsed.to_dict()
+
+
+@MCP.tool()
+@teamscale_tool
+async def get_merge_request_test_suggestions(
+    project: str,
+    source: str,
+    target: str,
+    merge_request_id: str | None = None,
+    all_partitions: bool = True,
+    partitions: list[str] | None = None,
+    include_executed_tests: bool = True,
+    server: str | None = None,
+    user: str | None = None,
+    access_key: str | None = None,
+    fetch: Callable[[Awaitable], Awaitable] | None = None,
+) -> dict:
+    """Get test suggestions for a merge request.
+
+    source and target are commit descriptors, e.g. "feature-branch:HEAD" and "master:HEAD".
+    merge_request_id is the MR identifier (format "connectorId/mrNumber" from mergeRequest.identifier.idWithRepository).
+    Returns suggested tests ranked by impact, with selection reason and covered method counts.
+    """
+    client = resolve_connection(server, user, access_key)
+    response = await fetch(api_get_merge_request_test_suggestions.asyncio_detailed(
+        project=project,
+        client=client,
+        source=source,
+        target=target,
+        merge_request_id=merge_request_id if merge_request_id is not None else UNSET,
+        all_partitions=all_partitions,
+        partitions=partitions if partitions is not None else UNSET,
+        include_executed_tests=include_executed_tests,
     ))
     return response.parsed.to_dict()
 

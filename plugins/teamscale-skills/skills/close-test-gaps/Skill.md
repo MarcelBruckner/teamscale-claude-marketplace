@@ -76,17 +76,28 @@ Ask the user: "Apply this test? (yes / skip / stop)"
 
 **UNTESTED_CHANGE** (existing method modified but not re-tested):
 
-This method already has tests but they haven't been run since the modification. Find the existing tests that cover this method:
-1. Search for test files that reference the method name or the class it belongs to.
-2. Read those test files to identify relevant test cases.
+This method already has tests but they haven't been run since the modification. Before processing individual UNTESTED_CHANGE methods, fetch Teamscale's test suggestions by calling the `get_merge_request_test_suggestions` MCP tool with:
+- `project`: the Teamscale project ID from step 2
+- `source`: `"{sourceBranch}:HEAD"`
+- `target`: `"{targetBranch}:HEAD"`
+- `merge_request_id`: the MR identifier from `mergeRequest.identifier.idWithRepository`
+- `all_partitions`: the partition config from step 3
+- `include_executed_tests`: `true`
 
-Show the user:
-1. Which existing tests likely cover this method
-2. The commands to run those specific tests
+This only needs to be called once — cache the results for all UNTESTED_CHANGE methods.
+
+The response contains `impactedTests` — a ranked list of tests that Teamscale suggests running for this MR. Each test has:
+- `uniformPath` — the test's path
+- `partition` — which test partition it belongs to
+- `selectionReason` — why it was selected (COVERS_CHANGES, COVERS_DELETED, ADDED_OR_MODIFIED_TEST, etc.)
+- `rank` — priority order
+- `numberOfAdditionallyCoveredMethods` — how many additional methods this test covers
+
+Show the user the suggested tests ranked by priority, grouped by selection reason. For each test show: uniform path, partition, and reason.
 
 Ask the user: "Run these tests? (yes / skip / stop)"
-- **yes:** Run the suggested test commands via Bash. Report the results. Continue to the next method.
-- **skip:** Skip this method. Continue to the next.
+- **yes:** The user should run the suggested tests in their CI or test environment. Tell the user which tests to run. Continue to the next method.
+- **skip:** Skip. Continue to the next.
 - **stop:** End the loop. Go to step 5.
 
 ### 5. Wrap up
