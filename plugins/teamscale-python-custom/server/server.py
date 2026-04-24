@@ -576,6 +576,7 @@ async def get_test_gap_percentage(
         client=client,
         end=end,
         baseline=baseline,
+        merge_request_mode=True,
         all_partitions=all_partitions,
         partitions=partitions if partitions is not None else UNSET,
     ))
@@ -607,6 +608,7 @@ async def get_test_gap_treemap(
         client=client,
         end=end,
         baseline=baseline,
+        merge_request_mode=True,
         all_partitions=all_partitions,
         partitions=partitions if partitions is not None else UNSET,
     ))
