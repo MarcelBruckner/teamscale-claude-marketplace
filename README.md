@@ -266,5 +266,5 @@ TEAMSCALE_URL=https://myinstance.teamscale.io TEAMSCALE_ACCESS_KEY=... TEAMSCALE
 To generate a PDF of the plugin comparison presentation:
 
 ```sh
-npx @marp-team/marp-cli comparison.md --html --pdf --output comparison.pdf
+npx @marp-team/marp-cli Presentation.md --html --pdf --output Presentation.pdf
 ```
