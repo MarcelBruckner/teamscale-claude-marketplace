@@ -499,6 +499,52 @@ async def pre_commit_poll(
     return response.parsed.to_dict()
 
 
+@MCP.tool()
+@teamscale_tool
+async def pre_commit_analyze(
+    project: str,
+    changes: str,
+    branch: str | None = None,
+    server: str | None = None,
+    user: str | None = None,
+    access_key: str | None = None,
+    fetch: Callable[[Awaitable], Awaitable] | None = None,
+) -> dict:
+    """Upload file changes and poll until pre-commit analysis is complete.
+
+    Combined tool: uploads changes, then polls every 2 seconds until analysis finishes.
+    The changes parameter is a JSON string mapping file paths to their new content.
+    Use null values for deleted files. Example: {"src/foo.py": "print('hi')", "old.py": null}
+    Returns the final findings and any errors.
+    """
+    client = resolve_connection(server, user, access_key)
+    body = RequestPreCommitAnalysisBody()
+    body.additional_properties = json.loads(changes)
+    response = await fetch(
+        request_pre_commit_analysis.asyncio_detailed(
+            project=project,
+            client=client,
+            body=body,
+            branch=branch if branch is not None else UNSET,
+        ),
+        expect_body=False,
+    )
+    result = PreCommit3Result.from_dict(json.loads(response.content))
+
+    while result.token is not UNSET and result.token:
+        await asyncio.sleep(2)
+        poll_response = await fetch(
+            poll_pre_commit_results.asyncio_detailed(
+                project=project,
+                token=result.token,
+                client=client,
+            ),
+        )
+        result = poll_response.parsed
+
+    return result.to_dict()
+
+
 def main():
     MCP.run(transport="stdio")
 
