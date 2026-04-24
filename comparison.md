@@ -367,7 +367,7 @@ We built MCP tools and skills. A Claude Code plugin can ship more:
 | **Authentication** | | ✅ Credentials stay local |
 | **Install** | Installs/references teamscale-dev | |
 
-The plugin ships **skills only** and points to `teamscale-dev` as the MCP server (installing it if needed). No MCP tools in the plugin itself.
+The plugin ships **skills only** and points to `teamscale-dev` as the MCP server (installing it if needed). User use cases drive new skills, and the skills dictate which MCP tools `teamscale-dev` needs to expose.
 
 ---
 
