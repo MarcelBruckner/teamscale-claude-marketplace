@@ -207,27 +207,22 @@ Each skill auto-detects the project and MR from the git repo. Later skills pick 
 
 # How Skills Work
 
-A skill is a Markdown file with YAML frontmatter. No code — just instructions for Claude:
+A skill is a Markdown file with YAML frontmatter. No code — just step-by-step instructions:
 
 ```markdown
 ---
 name: merge-request-findings
 description: Fetch Teamscale findings for the MR on the current branch
 ---
-
-## Steps
-
 ### 1. Verify git repository
 Run `git rev-parse --is-inside-work-tree` via Bash. ...
-
 ### 2. Detect Teamscale project
 Run `git remote get-url origin`. Call `get_project_id` MCP tool. ...
-
 ### 3. Detect merge request
 Call `list_merge_requests` with status OPEN. Match by branch. ...
 ```
 
-Skills orchestrate MCP tools, Bash commands, and file operations into a coherent workflow.
+Skills orchestrate MCP tools, Bash commands, and file operations into coherent workflows.
 
 ---
 
@@ -244,7 +239,7 @@ We started from developer workflows:
 - "What findings does my MR have?" → merge-request-findings skill → `list_merge_requests` + `get_merge_request_finding_churn` tools
 - "Close my test gaps" → close-test-gaps skill → `get_test_gap_treemap` + `get_merge_request_test_suggestions` tools
 
-The MCP tools exist to serve the skills.
+**The MCP tools exist to serve the skills.**
 
 ---
 
