@@ -369,61 +369,6 @@ Uses Zod schemas for parameter validation. `teamscaleFetch` provides the same er
 
 ---
 
-# 📦 Client Generation: Two Strategies
-
-<div class="columns">
-<div>
-
-### Current: Generate at Startup
-
-```
-User installs plugin
-        |
-  start-server.{py,js}
-        |
-  generate-client.sh   <-- runs on first start
-        |
-  server starts
-```
-
-Simple, always matches the bundled spec. Adds a few seconds to first launch.
-
-</div>
-<div>
-
-### Future Option: Pre-Generate & Commit
-
-```
-Developer runs generate-client.sh
-        |
-  commits generated client to repo
-        |
-  plugin ships with pre-built client
-        |
-  server starts immediately
-```
-
-Faster startup. Pin client to a specific Teamscale version. Review generated code in PRs.
-
-</div>
-</div>
-
----
-
-# 📦 Why Pre-Generating Matters
-
-| | Generate at Startup | Pre-Generate & Commit |
-|---|---|---|
-| **Startup speed** | Slower (first run) | ⚡ Instant |
-| **Version control** | Implicit (bundled spec) | 🔒 Explicit, pinned |
-| **Reviewability** | Generated code not in git | ✅ Visible in PRs |
-| **Teamscale version coupling** | Tied to bundled spec | Controlled upgrades |
-| **Developer effort** | None | Run script when upgrading |
-
-This is a natural next step: the generation scripts already exist. Just commit the output instead of gitignoring it.
-
----
-
 # 📊 Side-by-Side Comparison
 
 | Dimension | Python OpenAPI | Python Custom | TS Custom |
@@ -475,21 +420,6 @@ That's it. No env vars needed — Claude asks for credentials on first use.
 
 <!-- _class: lead -->
 
-# 🎯 Recommendation
-
-Use a **Custom plugin** as the primary interface for developers.
-
-✅ Curated tools give Claude better context and more reliable results
-✅ **Zero-config install** — developers can start immediately
-✅ Pre-generate the client for version control and fast startup
-✅ Choose **TypeScript** or **Python** based on your team's runtime
-
-Consider adding the **OpenAPI plugin** alongside for exploratory/advanced use cases.
-
----
-
-<!-- _class: lead -->
-
 # 🔮 Future Work
 
 ---
@@ -523,6 +453,55 @@ In-prompt credentials become part of the conversation context sent to Anthropic'
 | Teamscale changes needed |  None | None (External tool) | Yes (Built-in) |
 
 ⚠️ **Authentication is a problem in all three cases.**
+
+---
+
+# 🧠 From Tools to Workflows
+
+MCP gives Claude the **ability** to talk to Teamscale — but not the **initiative**.
+
+Today: the user must know what to ask for.
+
+```
+User: "Check if there are architecture violations in project X"
+       → Claude calls verify_architecture tool
+       → Returns results
+
+User: "..." (silence — Claude won't proactively do anything)
+```
+
+The MCP server is the **foundation**, not the solution. To make Claude genuinely useful with Teamscale, we need layers on top that tell it **when** and **how** to act.
+
+---
+
+# 🧩 The Missing Plugin Layers
+
+A Claude Code plugin can ship **all of these** — we only built the first one:
+
+| Component | What It Does | Teamscale Example |
+|---|---|---|
+| ✅ **MCP Server** | API tools Claude can call | `get_findings_list`, `verify_architecture` |
+| **Skills** | Multi-step workflows invoked via `/slash` commands | `/teamscale:review` — findings for changed files |
+| **Agents** | Custom personas with own system prompt & tool set | A "Teamscale QA" agent focused on code quality |
+| **Hooks** | Auto-run on Claude Code events (file edit, commit, …) | Check architecture compliance on every commit |
+| **Monitors** | Background watchers that stream events to Claude | Watch Teamscale worker logs for fatals in real-time |
+
+MCP alone = a phone line. The other layers = someone who knows when to call and what to say.
+
+---
+
+# 🛠️ What This Could Look Like
+
+**Rule** (in CLAUDE.md):
+> "After completing a feature, run `verify_architecture` for the current project."
+
+**Skill** (`/teamscale-review`):
+> Detect project from repo URL, fetch findings for changed files, suggest fixes
+
+**Hook** (on pre-commit):
+> Automatically check architecture compliance before every commit
+
+These layers turn a passive tool into an **active assistant**.
 
 ---
 

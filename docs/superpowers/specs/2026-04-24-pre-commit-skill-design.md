@@ -68,7 +68,7 @@ A markdown document instructing Claude to execute these steps:
 1. **Verify git repo** -- run `git rev-parse --is-inside-work-tree`. Abort if not in a repo.
 2. **Get changed files** -- run `git diff HEAD` to get all uncommitted changes (staged + unstaged). If no changes, inform user and stop.
 3. **Read file contents** -- for each changed file, read its current content. For deleted files, use `null`.
-4. **Detect Teamscale project** -- call the `get_project_id` MCP tool using the repo's remote URL. If multiple projects match, use the first one.
+4. **Detect Teamscale project** -- call the `get_project_id` MCP tool using the repo's remote URL. If multiple projects match, aks the user which to select.
 5. **Detect branch** -- run `git branch --show-current`.
 6. **Run pre-commit analysis** -- call `pre_commit_analyze` with the project, branch, and file changes map.
 7. **Present findings** as a structured summary:
