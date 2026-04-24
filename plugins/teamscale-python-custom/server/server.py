@@ -19,7 +19,6 @@ from teamscale_rest_api_client.api.architecture import get_all_architecture_asse
 from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
 from teamscale_rest_api_client.api.merge_requests import list_merge_requests as api_list_merge_requests, get_merge_request_finding_churn as api_get_merge_request_finding_churn
 from teamscale_rest_api_client.api.test_coverage import get_tga_test_coverage_partitions as api_get_test_gap_partitions
-from teamscale_rest_api_client.api.test_gap_analysis import get_tga_percentage as api_get_test_gap_percentage
 from teamscale_rest_api_client.api.test_gap_analysis import get_test_gap_tree_map as api_get_test_gap_treemap
 from teamscale_rest_api_client.models.e_log_level import ELogLevel
 from teamscale_rest_api_client.models.e_merge_request_status import EMergeRequestStatus
@@ -554,44 +553,10 @@ async def get_test_gap_partitions(
 
 @MCP.tool()
 @teamscale_tool
-async def get_test_gap_percentage(
-    project: str,
-    end: str,
-    baseline: str,
-    merge_request_identifier: str | None = None,
-    all_partitions: bool = True,
-    partitions: list[str] | None = None,
-    server: str | None = None,
-    user: str | None = None,
-    access_key: str | None = None,
-    fetch: Callable[[Awaitable], Awaitable] | None = None,
-) -> float:
-    """Get the test gap percentage for a merge request.
-
-    end and baseline are commit descriptors, e.g. "feature-branch:HEAD" and "main:HEAD".
-    merge_request_identifier is optional, format "connectorId/mrNumber" (from mergeRequest.identifier.idWithRepository).
-    Returns the TGA percentage (0.0 to 1.0) representing the ratio of tested changes.
-    """
-    client = resolve_connection(server, user, access_key)
-    response = await fetch(api_get_test_gap_percentage.asyncio_detailed(
-        project=project,
-        client=client,
-        end=end,
-        baseline=baseline,
-        merge_request_mode=True,
-        merge_request_identifier=merge_request_identifier if merge_request_identifier is not None else UNSET,
-        all_partitions=all_partitions,
-        partitions=partitions if partitions is not None else UNSET,
-    ))
-    return response.parsed
-
-
-@MCP.tool()
-@teamscale_tool
 async def get_test_gap_treemap(
     project: str,
-    end: str,
     baseline: str,
+    end: str,
     merge_request_identifier: str | None = None,
     all_partitions: bool = True,
     partitions: list[str] | None = None,
@@ -602,19 +567,22 @@ async def get_test_gap_treemap(
 ) -> dict:
     """Get the test gap treemap for a merge request.
 
-    end and baseline are commit descriptors, e.g. "feature-branch:HEAD" and "main:HEAD".
-    merge_request_identifier is optional, format "connectorId/mrNumber" (from mergeRequest.identifier.idWithRepository).
-    Returns per-method test gap data including state (TESTED_CHURN, UNTESTED_CHANGE,
-    UNTESTED_ADDITION, UNCHANGED, etc.), method names, and file paths.
+    baseline is the source branch commit descriptor (e.g. "feature-branch:HEAD").
+    end is the target branch commit descriptor (e.g. "master:HEAD").
+    merge_request_identifier format: "connectorId/mrNumber" (from mergeRequest.identifier.idWithRepository).
+    Returns per-method test gap data including ratio, stateCounter, and per-method state
+    (TESTED_CHURN, UNTESTED_CHANGE, UNTESTED_ADDITION, etc.).
     """
     client = resolve_connection(server, user, access_key)
     response = await fetch(api_get_test_gap_treemap.asyncio_detailed(
         project=project,
         client=client,
-        end=end,
         baseline=baseline,
+        end=end,
+        auto_select_branch=False,
         merge_request_mode=True,
         merge_request_identifier=merge_request_identifier if merge_request_identifier is not None else UNSET,
+        exclude_unchanged_methods=True,
         all_partitions=all_partitions,
         partitions=partitions if partitions is not None else UNSET,
     ))

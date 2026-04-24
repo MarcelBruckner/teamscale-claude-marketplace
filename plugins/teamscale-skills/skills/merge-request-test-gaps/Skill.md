@@ -54,32 +54,33 @@ If no partitions are returned, tell the user: "No test coverage partitions found
 
 ### 5. Fetch test gap data
 
-Using the selected merge request's `mergeRequest.sourceBranch` and `mergeRequest.targetBranch`, construct commit descriptors:
-- `end`: `"{sourceBranch}:HEAD"`
-- `baseline`: `"{targetBranch}:HEAD"`
+Extract from the selected merge request:
+- `mergeRequest.sourceBranch` — the feature branch
+- `mergeRequest.targetBranch` — the target branch (e.g. master)
+- `mergeRequest.identifier.idWithRepository` — the MR identifier (format: `"connectorId/mrNumber"`)
 
-Also extract the merge request identifier from `mergeRequest.identifier.idWithRepository` (format: `"connectorId/mrNumber"`).
-
-Call both MCP tools with the project, end, baseline, merge_request_identifier, and partition config:
-- `get_test_gap_percentage` with `merge_request_identifier` set to the identifier string
-- `get_test_gap_treemap` with `merge_request_identifier` set to the identifier string
+Call the `get_test_gap_treemap` MCP tool with:
+- `project`: the Teamscale project ID from step 2
+- `baseline`: `"{sourceBranch}:HEAD"` (the feature branch)
+- `end`: `"{targetBranch}:HEAD"` (the target branch, e.g. `"master:HEAD"`)
+- `merge_request_identifier`: the identifier string from above
+- Partition config from step 4
 
 ### 6. Present results
 
 **Summary header:**
-- Test gap percentage (from the percentage result, formatted as a percentage like "73% tested")
+- Test gap ratio from the `ratio` field in the treemap result (format as percentage, e.g. "73% tested")
 - State counts from `stateCounter.map` in the treemap result:
   - TESTED_CHURN: methods changed and tested
   - UNTESTED_CHANGE: methods changed but not tested
   - UNTESTED_ADDITION: new methods without tests
-  - UNCHANGED: methods not changed (for context)
 
 **Per-file detail:**
-- The treemap result contains a tree of `TgaMethodTreeMapNode` objects. Walk the tree recursively via `children` to find leaf nodes (methods).
+- The treemap result contains a tree of nodes. Walk the tree recursively via `children` to find leaf nodes (methods).
 - Group method nodes by file path (extract file path from `uniformPath` by removing the method part).
 - For each file that has methods with state UNTESTED_CHANGE or UNTESTED_ADDITION:
   - Show the file path as a heading
   - For each untested method in that file, show: `methodName` and `state` (UNTESTED_CHANGE or UNTESTED_ADDITION)
-- Skip files where all methods are tested or unchanged.
+- Skip files where all methods are tested.
 
 **Empty state:** If there are no methods with UNTESTED_CHANGE or UNTESTED_ADDITION, tell the user: "No test gaps detected for this merge request — all changed methods have test coverage."
