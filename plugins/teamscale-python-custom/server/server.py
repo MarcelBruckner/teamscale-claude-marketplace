@@ -18,6 +18,7 @@ from teamscale_rest_api_client.api.dashboards import get_all_dashboards
 from teamscale_rest_api_client.api.architecture import get_all_architecture_assessments, get_architecture_assessment
 from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
 from teamscale_rest_api_client.api.merge_requests import list_merge_requests as api_list_merge_requests
+from teamscale_rest_api_client.api.merge_requests import get_merge_request_finding_churn as api_get_merge_request_finding_churn
 from teamscale_rest_api_client.models.e_log_level import ELogLevel
 from teamscale_rest_api_client.models.e_merge_request_status import EMergeRequestStatus
 from teamscale_rest_api_client.models.request_pre_commit_analysis_body import RequestPreCommitAnalysisBody
@@ -463,6 +464,32 @@ async def list_merge_requests(
         max_=-1,
     ))
     return [mr.to_dict() for mr in response.parsed.merge_requests]
+
+
+@MCP.tool()
+@teamscale_tool
+async def get_merge_request_finding_churn(
+    project: str,
+    source: str,
+    target: str,
+    server: str | None = None,
+    user: str | None = None,
+    access_key: str | None = None,
+    fetch: Callable[[Awaitable], Awaitable] | None = None,
+) -> dict:
+    """Get the finding churn (added, removed, in changed code) for a merge request.
+
+    source and target are commit descriptors, e.g. "feature-branch:HEAD" and "main:HEAD".
+    Returns added findings, removed findings, findings in changed code, and a summary.
+    """
+    client = resolve_connection(server, user, access_key)
+    response = await fetch(api_get_merge_request_finding_churn.asyncio_detailed(
+        project=project,
+        client=client,
+        source=source,
+        target=target,
+    ))
+    return response.parsed.to_dict()
 
 
 @MCP.tool()
