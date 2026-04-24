@@ -193,23 +193,12 @@ With skills, the user just says what they want to accomplish.
 # A Typical Developer Workflow
 
 ```
-# 1. Run pre-commit analysis on local changes
-/teamscale-skills:pre-commit
-
-# 2. Fix the findings interactively
-/teamscale-skills:fix-findings
-
-# 3. See what findings your MR introduced
-/teamscale-skills:merge-request-findings
-
-# 4. Fix them interactively
-/teamscale-skills:fix-findings
-
-# 5. Check test coverage gaps
-/teamscale-skills:merge-request-test-gaps
-
-# 6. Write missing tests / re-run impacted tests
-/teamscale-skills:close-test-gaps
+/teamscale-skills:pre-commit              # 1. Run pre-commit analysis
+/teamscale-skills:fix-findings            # 2. Fix the findings
+/teamscale-skills:merge-request-findings  # 3. See MR findings
+/teamscale-skills:fix-findings            # 4. Fix them too
+/teamscale-skills:merge-request-test-gaps # 5. Check test gaps
+/teamscale-skills:close-test-gaps         # 6. Write tests / re-run
 ```
 
 Each skill auto-detects the project and MR from the git repo. Later skills pick up context from earlier ones.
