@@ -13,7 +13,7 @@ from mcp.server.fastmcp import FastMCP
 from teamscale_rest_api_client import AuthenticatedClient
 from teamscale_rest_api_client.api.project import delete_project, get_all_projects, get_branches_get_request, get_project_configuration
 from teamscale_rest_api_client.api.logging import get_project_worker_logs
-from teamscale_rest_api_client.api.findings import get_findings, get_finding as api_get_finding
+from teamscale_rest_api_client.api.findings import get_finding as api_get_finding, get_findings
 from teamscale_rest_api_client.api.dashboards import get_all_dashboards
 from teamscale_rest_api_client.api.architecture import get_all_architecture_assessments, get_architecture_assessment
 from teamscale_rest_api_client.api.pre_commit import request_pre_commit_analysis, poll_pre_commit_results
