@@ -6,14 +6,24 @@ backgroundColor: #fff
 style: |
   section {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #333;
+  }
+  section.lead {
+    border-left: 8px solid #E87722;
   }
   section.lead h1 {
     font-size: 2.4em;
+    color: #333;
   }
   section.lead h2 {
     font-weight: 400;
-    color: #555;
+    color: #999;
   }
+  h1 {
+    color: #1a1a1a;
+  }
+  h2 { color: #555; }
+  h3 { color: #E87722; }
   table {
     font-size: 0.75em;
   }
@@ -22,11 +32,8 @@ style: |
     grid-template-columns: 1fr 1fr;
     gap: 1.5em;
   }
-  .pro { color: #2e7d32; }
-  .con { color: #c62828; }
   strong { color: #1a1a1a; }
-  h1 { color: #1a1a1a; }
-  h2 { color: #333; }
+  a { color: #E87722; }
   code { font-size: 0.85em; }
   footer {
     font-size: 0.6em;
