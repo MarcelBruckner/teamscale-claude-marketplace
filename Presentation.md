@@ -52,12 +52,12 @@ Marcel Bruckner
 
 # What I Built
 
-Teamscale + Claude Code — findings, fixes, and test gaps from the command line.
+**Claude Code Plugin:** Pre-commit, fix findings, and close test gaps.
 
 1. **MCP Server** — exposes Teamscale REST API as tools Claude can call
 2. **Skills** — multi-step workflows developers actually want to run
 
-Three MCP server implementations. Five skills.
+💡 Three MCP server implementations. Five skills.
 
 <!--
 I connected Teamscale to Claude Code so developers can run findings analysis, fix code quality issues, and close test gaps — all from the command line.
@@ -178,10 +178,10 @@ I built both a Python and TypeScript version with identical tools to compare the
 | Dimension | Python OpenAPI | Python Custom | TS Custom |
 |---|---|---|---|
 | **Endpoints** | 121 | ~20 | 13 |
-| **Zero-config install** | ❌ | ✅ | ✅ |
 | **Auto new endpoints** | ✅ | ❌ | ❌ |
+| **Zero-config install** | ❌ | ✅ | ✅ |
 | **Business logic** | ❌ | ✅ | ✅ |
-| **Claude picks correctly** | Unreliable | Reliable | Reliable |
+| **Claude picks correctly** | ❌ Unreliable | ✅ Reliable | ✅ Reliable |
 
 **Verdict:** Curated beats auto-generated. Small tool sets win.
 
@@ -206,9 +206,9 @@ Claude works much better with a small, curated tool set where each tool has a cl
 MCP tools are building blocks. **Skills** turn them into workflows.
 
 ```
-/teamscale-skills:pre-commit                # "check my changes"
-/teamscale-skills:merge-request-findings    # "what did my MR break?"
-/teamscale-skills:fix-findings              # "fix them"
+/pre-commit                # "check my changes"
+/merge-request-findings    # "what did my MR change?"
+/fix-findings              # "fix the findings"
 ```
 
 <!--
@@ -252,11 +252,11 @@ The key insight is that you don't need code to build powerful workflows. Claude 
 
 | Skill | What It Does |
 |-------|-------------|
-| **pre-commit** | Run Teamscale pre-commit analysis on uncommitted changes. Shows findings by file. |
+| **pre-commit** | Run Teamscale pre-commit analysis on uncommitted changes.<br>Shows findings by file. |
 | **merge-request-findings** | Auto-detect the MR for the current branch, fetch finding churn (added + in changed code). |
 | **fix-findings** | Walk through findings one by one, propose code fixes, apply with confirmation. |
 | **merge-request-test-gaps** | Show which changed methods in your MR lack test coverage. |
-| **close-test-gaps** | For new methods: propose and write tests. For modified methods: suggest which tests to re-run. |
+| **close-test-gaps** | For new methods: propose and write tests.<br>For modified methods: suggest which tests to re-run. |
 
 
 <!--
@@ -278,12 +278,12 @@ Close-test-gaps has two modes: for new methods, it proposes and writes tests. Fo
 # A Typical Developer Workflow
 
 ```
-/teamscale-skills:pre-commit              # 1. Check my changes
-/teamscale-skills:fix-findings            # 2. Fix the findings
-/teamscale-skills:merge-request-findings  # 3. See MR findings
-/teamscale-skills:fix-findings            # 4. Fix them too
-/teamscale-skills:merge-request-test-gaps # 5. Check test gaps
-/teamscale-skills:close-test-gaps         # 6. Write tests / re-run
+/pre-commit                       # 1. Check my changes
+/fix-findings                     # 2. Fix the findings
+/merge-request-findings           # 3. See MR findings
+/fix-findings                     # 4. Fix them too
+/merge-request-test-gaps          # 5. Check test gaps
+/close-test-gaps                  # 6. Write tests / re-run
 ```
 
 Auto-detects project and MR. Skills chain naturally.
@@ -302,14 +302,20 @@ This is the workflow we envision: a developer pushes their feature branch, opens
 
 **Without skills** — user drives every step:
 ```
-"Check architecture violations in project X"
+"Get the Teamscale project I'm working on" 
   → Claude calls one tool → raw results
+"Get all local changes"
+  → Claude calls one tool → raw results
+"Upload them to Teamscale"
+  → Claude calls one tool → raw results
+...
 ```
 
 **With skills** — user states the goal:
 ```
-/teamscale-skills:pre-commit
-  → detects project → reads changes → runs analysis
+/pre-commit
+
+  → detects project → reads changes → uploads for analysis 
   → formats results → suggests fixes
 ```
 
