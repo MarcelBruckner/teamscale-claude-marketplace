@@ -266,10 +266,16 @@ TEAMSCALE_URL=https://myinstance.teamscale.io TEAMSCALE_ACCESS_KEY=... TEAMSCALE
   uv run plugins/teamscale-python-openapi/server/server.py
 ```
 
-## Comparison
+## Presentation
 
-To generate a PDF of the plugin comparison presentation:
+To generate a PDF of the plugin presentation:
 
 ```sh
-marp Presentation.md --pdf --output Presentation.pdf
+marp Presentation_Full.md --pdf --output Presentation_Full.pdf
+```
+
+To generate a PPTX of the plugin presentation:
+
+```sh
+marp Presentation.md --pptx -o Presentation.pptx
 ```
