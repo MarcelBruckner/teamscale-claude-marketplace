@@ -44,13 +44,13 @@ style: |
 
 # Teamscale + Claude Code
 
-## From API Tools to Developer Workflows
+## From MCP Tools to Developer Workflows
 
 Marcel Bruckner
 
 ---
 
-# What We Built
+# What I Built
 
 Teamscale + Claude Code — findings, fixes, and test gaps from the command line.
 
@@ -60,11 +60,11 @@ Teamscale + Claude Code — findings, fixes, and test gaps from the command line
 Three MCP server implementations. Five skills.
 
 <!--
-We connected Teamscale to Claude Code so developers can run findings analysis, fix code quality issues, and close test gaps — all from the command line.
+I connected Teamscale to Claude Code so developers can run findings analysis, fix code quality issues, and close test gaps — all from the command line.
 
 The stack has two layers. The MCP server is the low-level bridge — it exposes Teamscale REST API endpoints as tools Claude can call. Skills sit on top and orchestrate those tools into things developers actually want to do, like "check my changes before pushing" or "fix findings on my MR."
 
-We built three MCP server implementations to compare approaches, and five skills that demonstrate the real value.
+I built three MCP server implementations to compare approaches, and five skills that demonstrate the real value.
 -->
 
 ---
@@ -81,7 +81,7 @@ Claude Code has native MCP support via its **plugin system**.
 <!--
 MCP is an open protocol that lets AI assistants call external tools and read external data. An MCP server exposes tools — actions the model can invoke, like "list projects" or "get findings" — and resources, which are read-only data endpoints.
 
-Claude Code has native MCP support through its plugin system, so any MCP server can be installed as a plugin. We built three plugins that bridge Claude Code to the Teamscale REST API, each with a different approach to see what works best in practice.
+Claude Code has native MCP support through its plugin system, so any MCP server can be installed as a plugin. I built three plugins that bridge Claude Code to the Teamscale REST API, each with a different approach to see what works best in practice.
 -->
 
 ---
@@ -97,7 +97,7 @@ Claude Code has native MCP support through its plugin system, so any MCP server 
 | **Zero-config** | ❌ Env vars required | ✅ | ✅ |
 
 <!--
-We tried three different approaches to building the MCP server. The first auto-generates everything from the OpenAPI spec — minimal code, full coverage, but no curation. The other two are hand-crafted: we picked the endpoints developers actually need and added business logic on top.
+I tried three different approaches to building the MCP server. The first auto-generates everything from the OpenAPI spec — minimal code, full coverage, but no curation. The other two are hand-crafted: I picked the endpoints developers actually need and added business logic on top.
 
 The Python and TypeScript custom servers expose identical tools — same functionality, different runtimes. This let us compare the developer experience of building MCP servers in both languages. The custom servers also support zero-config installation: connection params can be passed per tool call, falling back to environment variables.
 -->
@@ -162,13 +162,13 @@ But in practice, it doesn't work well. 121 tools overwhelm Claude's context wind
 Python and TypeScript versions expose identical tools.
 
 <!--
-The custom plugins are hand-written. We picked the ~20 endpoints developers actually need and added business logic on top — things like aggregating findings by file, verifying architecture, or detecting the right project from the git remote URL.
+The custom plugins are hand-written. I picked the ~20 endpoints developers actually need and added business logic on top — things like aggregating findings by file, verifying architecture, or detecting the right project from the git remote URL.
 
 The tools have uniform error handling and optional connection parameters. You can pass server, user, and access key per tool call, or let it fall back to environment variables. This means zero-config installation — the plugin just works.
 
 Claude reliably picks the right tool because the set is small and each tool has a clear, distinct purpose. The tradeoff is that every new endpoint requires manual work to add.
 
-We built both a Python and TypeScript version with identical tools to compare the developer experience.
+I built both a Python and TypeScript version with identical tools to compare the developer experience.
 -->
 
 ---
@@ -388,28 +388,6 @@ This is a maintenance burden. Every Teamscale release could potentially break th
 
 ---
 
-# Skill-Driven Development
-
-```
-User use case  →  Design skill  →  Implement MCP tools skill needs
-```
-
-- "Check my changes" &rarr; pre-commit skill &rarr; `pre_commit_analyze`
-- "MR findings?" &rarr; merge-request-findings &rarr; `get_merge_request_finding_churn`
-- "Close test gaps" &rarr; close-test-gaps &rarr; `get_test_gap_treemap`
-
-**The MCP tools exist to serve the skills.**
-
-<!--
-This is the key design principle: skills dictate which MCP tools to build — not the other way around. You start from a developer use case, design the skill workflow, and then implement only the MCP tools that skill needs.
-
-We started from three developer workflows. "Check my changes before pushing" drove the pre-commit skill, which needed the pre_commit_analyze tool. "What findings does my MR have?" drove the merge-request-findings skill, which needed list_merge_requests and get_merge_request_finding_churn. "Close my test gaps" drove the close-test-gaps skill, which needed get_test_gap_treemap and get_merge_request_test_suggestions.
-
-If you build tools first and hope someone uses them, you get 121 endpoints nobody orchestrates. If you start from skills, you get exactly the tools developers need.
--->
-
----
-
 # Safer Authentication
 
 | Current | Risk |
@@ -435,17 +413,38 @@ We see three possible improvements. OAuth or SSO would use browser-based login w
 | Component | Teamscale Example |
 |---|---|
 | ✅ **MCP Server** | `get_findings_list`, `verify_architecture` |
-| ✅ **Skills** | `/pre-commit`, `/fix-findings` |
-| **Agents** | "Teamscale QA" persona |
+| ✅ **Skills** | `/pre-commit`, `/fix-findings`, `/close-test-gaps` |
+| **Agents** | "Teamscale QA" persona, ... |
 | **Hooks** | Architecture check on every commit |
 | **Monitors** | Watch worker logs for fatals |
 
-**Next:** User use cases &rarr; skills &rarr; tools.
 
 <!--
 We built MCP tools and skills, but a Claude Code plugin can ship more. Agents are custom personas with their own system prompt — imagine a "Teamscale QA" agent that automatically reviews code quality. Hooks auto-run on Claude Code events — like checking architecture on every commit. Monitors are background watchers that could, for example, watch Teamscale worker logs for fatals and alert you.
 
 The path forward is the same skill-driven approach: collect user use cases, design skills around them, then implement the tools those skills need.
+-->
+
+---
+
+# Skill-Driven Development
+
+```
+User use case  →  Design skill  →  Implement MCP tools skill needs
+```
+
+- "Check my changes" &rarr; pre-commit skill &rarr; `pre_commit_analyze`
+- "MR findings?" &rarr; merge-request-findings &rarr; `get_merge_request_finding_churn`
+- "Close test gaps" &rarr; close-test-gaps &rarr; `get_test_gap_treemap`
+
+**The MCP tools exist to serve the skills.**
+
+<!--
+This is the key design principle: skills dictate which MCP tools to build — not the other way around. You start from a developer use case, design the skill workflow, and then implement only the MCP tools that skill needs.
+
+We started from three developer workflows. "Check my changes before pushing" drove the pre-commit skill, which needed the pre_commit_analyze tool. "What findings does my MR have?" drove the merge-request-findings skill, which needed list_merge_requests and get_merge_request_finding_churn. "Close my test gaps" drove the close-test-gaps skill, which needed get_test_gap_treemap and get_merge_request_test_suggestions.
+
+If you build tools first and hope someone uses them, you get 121 endpoints nobody orchestrates. If you start from skills, you get exactly the tools developers need.
 -->
 
 ---
@@ -556,9 +555,9 @@ The key strength is that these tools are available to any MCP client, not just C
 | Dimension | teamscale-dev | /mcp + Local MCP |
 |---|---|---|
 | **Install** | Single binary / Link from plugin | Thin local MCP from plugin |
-| **API drift** | CLI handles it | Server handles it |
-| **Auth** | CLI credentials | OAuth/OpenID |
-| **Server changes** | None | New endpoint |
+| **API drift** | teamscale-dev handles it | Server handles it automatically |
+| **Auth** | Local credentials | OAuth/OpenID |
+| **Server changes needed** | None | New /mcp endpoint |
 | **Ships with** | teamscale-dev | Teamscale release |
 | **Beyond Claude Code** | No | Yes (any MCP client) |
 
