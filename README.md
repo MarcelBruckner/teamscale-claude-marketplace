@@ -271,7 +271,7 @@ TEAMSCALE_URL=https://myinstance.teamscale.io TEAMSCALE_ACCESS_KEY=... TEAMSCALE
 To generate a PDF of the plugin presentation:
 
 ```sh
-marp Presentation_Full.md --pdf --output Presentation_Full.pdf
+marp Presentation.md --pdf --output Presentation.pdf
 ```
 
 To generate a PPTX of the plugin presentation:
